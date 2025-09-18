@@ -1,0 +1,38 @@
+spring:
+  application:
+    name: flashcards
+
+  data:
+    mongodb:
+      uri: mongodb://flashcards_user:flashcards_pass@localhost:27017/flashcards?authSource=flashcards
+      database: flashcards
+      auto-index-creation: true
+
+server:
+  port: 8080
+  error:
+    include-message: always
+    include-binding-errors: always
+
+logging:
+  level:
+    root: INFO
+    com.flashcards.backend: DEBUG
+    org.springframework.data.mongodb: DEBUG
+
+openapi:
+  info:
+    title: Flashcards API
+    description: Backend APIs for flashcard application with AI-powered card generation
+    version: v1.0.0
+    contact:
+      name: Casey Quinn
+      email: caseythecoder90@gmail.com
+    license:
+      name: MIT License
+      url: https://opensource.org/licenses/MIT
+  servers:
+    - url: http://localhost:8080
+      description: Development server
+    - url: https://api.flashcards.example.com
+      description: Production server
