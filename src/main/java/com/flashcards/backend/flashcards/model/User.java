@@ -10,6 +10,7 @@ import org.springframework.data.mongodb.core.index.Indexed;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Set;
 
 @Data
 @Builder
@@ -30,8 +31,18 @@ public class User {
     private String firstName;
     private String lastName;
 
+    private Set<Role> roles;
+    private boolean enabled;
+    private boolean accountNonExpired;
+    private boolean accountNonLocked;
+    private boolean credentialsNonExpired;
+
+    private String totpSecret;
+    private boolean totpEnabled;
+
     private List<String> deckIds;
 
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    private LocalDateTime lastLoginAt;
 }

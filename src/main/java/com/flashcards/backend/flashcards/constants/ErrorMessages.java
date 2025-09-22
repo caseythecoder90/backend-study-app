@@ -36,6 +36,36 @@ public class ErrorMessages {
     public static final String CONTROLLER_UNAUTHORIZED_ACCESS = "Unauthorized access to %s";
     public static final String CONTROLLER_FORBIDDEN_ACTION = "Action %s is forbidden for current user";
 
+    // Authentication Error Messages
+    public static final String AUTH_PASSWORD_NULL_EMPTY = "Password cannot be null or empty";
+    public static final String AUTH_USER_NULL = "User cannot be null";
+    public static final String AUTH_USER_ID_NULL = "User ID cannot be null";
+    public static final String AUTH_TOKEN_INVALID = "Invalid JWT token: %s";
+    public static final String AUTH_TOKEN_EXPIRED = "JWT token has expired";
+    public static final String AUTH_TOKEN_EXTRACTION_FAILED = "Failed to extract claims from token: %s";
+    public static final String AUTH_PASSWORD_VERIFICATION_FAILED = "Password verification failed: null or empty password provided";
+    public static final String AUTH_CREDENTIALS_INVALID = "Invalid username or password";
+    public static final String AUTH_USER_DISABLED = "User account is disabled";
+    public static final String AUTH_TOTP_CODE_INVALID = "Invalid TOTP code";
+    public static final String AUTH_TOTP_CODE_REQUIRED = "TOTP code is required for this account";
+    public static final String AUTH_TOTP_SECRET_USERNAME_NULL = "Secret and username cannot be null or empty";
+    public static final String AUTH_TOTP_QR_GENERATION_FAILED = "Failed to generate QR code: %s";
+    public static final String AUTH_TOTP_VERIFICATION_FAILED = "TOTP verification failed: secret or code is null/empty";
+
+    // Error Response Field Names
+    public static final String ERROR_FIELD_TIMESTAMP = "timestamp";
+    public static final String ERROR_FIELD_STATUS = "status";
+    public static final String ERROR_FIELD_ERROR = "error";
+    public static final String ERROR_FIELD_MESSAGE = "message";
+    public static final String ERROR_FIELD_PATH = "path";
+
+    // Error Type Values
+    public static final String ERROR_TYPE_UNAUTHORIZED = "Unauthorized";
+    public static final String ERROR_TYPE_FORBIDDEN = "Forbidden";
+    public static final String ERROR_TYPE_BAD_REQUEST = "Bad Request";
+    public static final String ERROR_TYPE_NOT_FOUND = "Not Found";
+    public static final String ERROR_TYPE_INTERNAL_SERVER_ERROR = "Internal Server Error";
+
     // Common Entity Names
     public static final String ENTITY_USER = "User";
     public static final String ENTITY_DECK = "Deck";

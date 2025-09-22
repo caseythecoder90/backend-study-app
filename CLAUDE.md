@@ -30,7 +30,9 @@ This is a Spring Boot backend for a flashcard application using MongoDB as the d
 ### Utility Classes Usage
 Always use Apache Commons and Java utility classes:
 - Use `StringUtils` from Apache Commons for string operations (never do direct null/empty checks)
-- Use `BooleanUtils` from Apache Commons for boolean operations
+- Use `BooleanUtils` from Apache Commons for ALL boolean operations (never do direct boolean checks like `if (flag)`)
+  - Use `BooleanUtils.isTrue()`, `BooleanUtils.isFalse()`, `BooleanUtils.isNotTrue()`, `BooleanUtils.isNotFalse()`
+  - Can be imported statically or used with class name
 - Use `CollectionUtils` from Apache Commons for collection operations
 - Use `IOUtils` from Apache Commons for I/O operations
 - Use `Objects` from java.util for null-safe operations
@@ -41,6 +43,14 @@ Always use Apache Commons and Java utility classes:
 - Import specific constants like `import static com.package.ErrorMessages.DAO_SAVE_ERROR;`
 - Never use wildcard imports (`import static com.package.ErrorMessages.*;`)
 - Keep imports organized: standard imports, then blank line, then static imports
+
+### Constants Standards
+- NEVER define constants in the same file as the class that uses them
+- ALWAYS create dedicated constants files in the `constants` package
+- For logging, do not use constants. 
+- Use meaningful constant names that clearly indicate their purpose
+- Group related constants together (e.g., `ErrorMessages.java`, `JwtConstants.java`)
+- Constants should be `public static final` and follow UPPER_SNAKE_CASE naming
 
 ### String Formatting Standards
 - Use `String.formatted()` instance method instead of `String.format()` static method
@@ -147,6 +157,12 @@ Follow RESTful conventions:
 
 ALL APIs MUST include comprehensive OpenAPI/Swagger annotations:
 
+### Custom Documentation Annotations
+- ALWAYS use custom annotation classes for REST controllers with extensive Swagger documentation
+- Create dedicated annotation files in the `annotation` package for each controller
+- This keeps controller code clean and separates documentation concerns
+- Follow the pattern established in existing annotation files (e.g., `ApiDocumentation.java`, `DeckApiDocumentation.java`)
+
 ### Required Annotations for Controllers
 - `@Tag` - Categorize related endpoints
 - `@Operation` - Describe what the endpoint does
@@ -173,3 +189,4 @@ ALL APIs MUST include comprehensive OpenAPI/Swagger annotations:
 - Controller tests using MockMvc
 - Use `@DataMongoTest` for repository tests
 - Maintain minimum 80% code coverage
+- always use custom annotations as found in annotations package for things like REST controllers where there is a lot of swagger documentation. this helps in keeping the code clean. change this for the auth controller

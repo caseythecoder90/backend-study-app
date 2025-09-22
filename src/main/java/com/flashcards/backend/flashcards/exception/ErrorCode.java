@@ -21,7 +21,16 @@ public enum ErrorCode {
     CONTROLLER_BAD_REQUEST("CTL_001", "Bad request"),
     CONTROLLER_UNAUTHORIZED("CTL_002", "Unauthorized"),
     CONTROLLER_FORBIDDEN("CTL_003", "Forbidden"),
-    CONTROLLER_NOT_FOUND("CTL_004", "Resource not found");
+    CONTROLLER_NOT_FOUND("CTL_004", "Resource not found"),
+
+    // Authentication Error Codes
+    AUTH_INVALID_CREDENTIALS("AUTH_001", "Invalid credentials"),
+    AUTH_TOKEN_INVALID("AUTH_002", "Invalid token"),
+    AUTH_TOKEN_EXPIRED("AUTH_003", "Token expired"),
+    AUTH_PASSWORD_INVALID("AUTH_004", "Password validation failed"),
+    AUTH_USER_DISABLED("AUTH_005", "User account disabled"),
+    AUTH_TOTP_INVALID("AUTH_006", "Invalid TOTP code"),
+    AUTH_TOTP_REQUIRED("AUTH_007", "TOTP verification required");
 
     private final String code;
     private final String defaultMessage;
