@@ -51,7 +51,7 @@ public class AuthService {
         UserDto userDto = userMapper.toDto(savedUser);
 
         log.debug("User registered successfully: {}", savedUser.getUsername());
-        return buildAuthResponse(accessToken, userDto, false);
+        return buildAuthResponse(accessToken, userDto, savedUser.isTotpEnabled());
     }
 
     public AuthResponseDto login(LoginDto loginDto) {
@@ -72,13 +72,9 @@ public class AuthService {
         String accessToken = jwtService.generateToken(user);
         UserDto userDto = userMapper.toDto(user);
 
-        boolean requiresTotpSetup = BooleanUtils.isTrue(user.isTotpEnabled()) &&
-                                   BooleanUtils.isFalse(isNotBlank(loginDto.getTotpCode()));
-
         log.debug("User authenticated successfully: {}", user.getUsername());
-        return buildAuthResponse(accessToken, userDto, requiresTotpSetup);
+        return buildAuthResponse(accessToken, userDto, user.isTotpEnabled());
     }
-
     private void validateUserDoesNotExist(CreateUserDto createUserDto) {
         if (BooleanUtils.isTrue(userDao.existsByUsername(createUserDto.getUsername()))) {
             throw new ServiceException(
@@ -212,7 +208,7 @@ public class AuthService {
         UserDto userDto = userMapper.toDto(savedUser);
 
         log.debug("TOTP enabled successfully for user: {}", userId);
-        return buildAuthResponse(accessToken, userDto, false);
+        return buildAuthResponse(accessToken, userDto, true);
     }
 
     public AuthResponseDto disableTotp(String userId) {
@@ -240,13 +236,13 @@ public class AuthService {
         return buildAuthResponse(accessToken, userDto, false);
     }
 
-    private AuthResponseDto buildAuthResponse(String accessToken, UserDto userDto, boolean requiresTotpSetup) {
+    private AuthResponseDto buildAuthResponse(String accessToken, UserDto userDto, boolean totpEnabled) {
         return AuthResponseDto.builder()
                 .accessToken(accessToken)
                 .tokenType(JWT_TOKEN_TYPE)
                 .expiresIn(jwtService.getExpirationMs() / 1000)
                 .user(userDto)
-                .requiresTotpSetup(requiresTotpSetup)
+                .totpEnabled(totpEnabled)
                 .build();
     }
 }

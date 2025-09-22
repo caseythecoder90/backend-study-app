@@ -21,7 +21,7 @@ sequenceDiagram
     Auth->>DB: createUser(totpEnabled: false)
     DB-->>Auth: user created
     Auth->>Auth: generateJWT(totpEnabled: false)
-    Auth-->>API: {token, user, requiresTotpSetup: false}
+    Auth-->>API: {token, user, totpEnabled: false}
     API-->>UI: Registration successful
     UI-->>U: Welcome! Account created
 
@@ -33,7 +33,7 @@ sequenceDiagram
     Auth->>Auth: verifyPassword()
     Auth->>Auth: checkTotpEnabled() → false
     Auth->>Auth: generateJWT(totpEnabled: false)
-    Auth-->>API: {token, user, requiresTotpSetup: false}
+    Auth-->>API: {token, user, totpEnabled: false}
     API-->>UI: Login successful
     UI-->>U: Dashboard access granted
 ```
@@ -81,7 +81,7 @@ sequenceDiagram
     TOTP-->>Auth: validation result
     Auth->>DB: updateUser(totpEnabled: true)
     Auth->>Auth: generateJWT(totpEnabled: true)
-    Auth-->>API: {newToken, user, requiresTotpSetup: false}
+    Auth-->>API: {newToken, user, totpEnabled: true}
     API-->>UI: TOTP enabled successfully
     UI-->>U: 2FA is now active
 ```
@@ -127,7 +127,7 @@ sequenceDiagram
     Auth->>TOTP: validateCode(secret, code)
     TOTP-->>Auth: validation successful
     Auth->>Auth: generateJWT(totpEnabled: true)
-    Auth-->>API: {token, user, requiresTotpSetup: false}
+    Auth-->>API: {token, user, totpEnabled: true}
     API-->>UI: Login successful
     UI-->>U: Dashboard access granted
 ```
@@ -152,7 +152,7 @@ sequenceDiagram
     Auth->>Auth: checkTotpEnabled() → true
     Auth->>DB: updateUser(totpEnabled: false, totpSecret: null)
     Auth->>Auth: generateJWT(totpEnabled: false)
-    Auth-->>API: {newToken, user, requiresTotpSetup: false}
+    Auth-->>API: {newToken, user, totpEnabled: false}
     API-->>UI: 2FA disabled successfully
     UI-->>U: 2FA is now disabled
 

@@ -24,6 +24,6 @@ public class AuthResponseDto {
     @Schema(description = "User information")
     private UserDto user;
 
-    @Schema(description = "Whether user needs to set up 2FA", example = "false")
-    private boolean requiresTotpSetup;
+    @Schema(description = "Whether TOTP is enabled for this user", example = "false")
+    private boolean totpEnabled;
 }
