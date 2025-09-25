@@ -1,7 +1,9 @@
 package com.flashcards.backend.flashcards.dto;
 
+import com.flashcards.backend.flashcards.model.Flashcard;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -43,4 +45,7 @@ public class CreateFlashcardDto {
     @Schema(description = "Tags for categorizing and searching (max 10 tags, 1-30 chars each)", example = "[\"javascript\", \"closures\", \"programming\"]")
     @Size(max = 10, message = "Maximum 10 tags allowed")
     private List<@Size(min = 1, max = 30, message = "Each tag must be between 1 and 30 characters") String> tags;
+
+    @Schema(description = "Difficulty level of the flashcard")
+    private Flashcard.DifficultyLevel difficulty;
 }

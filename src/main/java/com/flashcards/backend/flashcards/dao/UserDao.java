@@ -15,5 +15,6 @@ public interface UserDao {
     void deleteById(String id);
     boolean existsByUsername(String username);
     boolean existsByEmail(String email);
+    Optional<User> findByOauthProviderAndOauthId(String oauthProvider, String oauthId);
     long count();
 }

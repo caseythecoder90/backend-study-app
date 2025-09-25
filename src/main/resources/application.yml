@@ -2,11 +2,46 @@ spring:
   application:
     name: flashcards
 
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+    time-zone: UTC
+    date-format: "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"
+
   data:
     mongodb:
-      uri: mongodb://flashcards_user:flashcards_pass@localhost:27017/flashcards?authSource=flashcards
-      database: flashcards
+      uri: ${MONGODB_URI}
+      database: ${MONGODB_DATABASE:flashcards}
       auto-index-creation: true
+
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: ${GOOGLE_CLIENT_ID}
+            client-secret: ${GOOGLE_CLIENT_SECRET}
+            scope:
+              - openid
+              - profile
+              - email
+            redirect-uri: ${GOOGLE_REDIRECT_URI:http://localhost:8080/login/oauth2/code/google}
+          github:
+            client-id: ${GITHUB_CLIENT_ID}
+            client-secret: ${GITHUB_CLIENT_SECRET}
+            scope:
+              - user:email
+              - read:user
+            redirect-uri: ${GITHUB_REDIRECT_URI:http://localhost:8080/login/oauth2/code/github}
+
+  ai:
+    openai:
+      api-key: ${OPENAI_API_KEY}
+      chat:
+        options:
+          model: ${OPENAI_MODEL:gpt-4o-mini}
+          temperature: ${OPENAI_TEMPERATURE:0.7}
+          max-tokens: ${OPENAI_MAX_TOKENS:2000}
 
 server:
   port: 8080
@@ -36,3 +71,34 @@ openapi:
       description: Development server
     - url: https://api.flashcards.example.com
       description: Production server
+
+jwt:
+  secret: ${JWT_SECRET}
+  expiration: ${JWT_EXPIRATION:86400000}  # 24 hours in milliseconds
+
+app:
+  name: ${APP_NAME:Flashcards}
+
+oauth:
+  success-redirect-url: ${OAUTH_SUCCESS_REDIRECT_URL:http://localhost:3000/auth/success}
+  failure-redirect-url: ${OAUTH_FAILURE_REDIRECT_URL:http://localhost:3000/auth/error}
+
+jasypt:
+  encryptor:
+    password: ${JASYPT_ENCRYPTOR_PASSWORD}
+    algorithm: PBEWITHHMACSHA512ANDAES_256
+    key-obtention-iterations: 1000
+    pool-size: 1
+    provider-name: SunJCE
+    salt-generator-class-name: org.jasypt.salt.RandomSaltGenerator
+    iv-generator-class-name: org.jasypt.iv.RandomIvGenerator
+    string-output-type: base64
+
+ai:
+  limits:
+    max-flashcards-per-request: 20
+    max-text-length: 10000
+    rate-limit-per-minute: 10
+  cache:
+    enabled: true
+    ttl: 3600

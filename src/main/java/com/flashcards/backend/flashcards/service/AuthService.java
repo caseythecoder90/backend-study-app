@@ -4,6 +4,8 @@ import com.flashcards.backend.flashcards.dao.UserDao;
 import com.flashcards.backend.flashcards.dto.AuthResponseDto;
 import com.flashcards.backend.flashcards.dto.CreateUserDto;
 import com.flashcards.backend.flashcards.dto.LoginDto;
+import com.flashcards.backend.flashcards.dto.RecoveryCodeLoginDto;
+import com.flashcards.backend.flashcards.dto.RecoveryCodesDto;
 import com.flashcards.backend.flashcards.dto.TotpSetupDto;
 import com.flashcards.backend.flashcards.dto.UserDto;
 import com.flashcards.backend.flashcards.exception.ErrorCode;
@@ -17,10 +19,22 @@ import org.apache.commons.lang3.BooleanUtils;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
+import static com.flashcards.backend.flashcards.constants.AuthConstants.RECOVERY_CODE_INSTRUCTIONS;
+import static com.flashcards.backend.flashcards.constants.AuthConstants.RECOVERY_CODE_LOW_WARNING;
+import static com.flashcards.backend.flashcards.constants.AuthConstants.RECOVERY_CODE_MIN_WARNING_THRESHOLD;
+import static com.flashcards.backend.flashcards.constants.AuthConstants.RECOVERY_CODE_WARNING;
+import static com.flashcards.backend.flashcards.constants.AuthConstants.TOTP_ALREADY_ENABLED;
+import static com.flashcards.backend.flashcards.constants.AuthConstants.TOTP_NOT_ENABLED;
+import static com.flashcards.backend.flashcards.constants.AuthConstants.TOTP_SETUP_REQUIRED;
 import static com.flashcards.backend.flashcards.constants.ErrorMessages.AUTH_CREDENTIALS_INVALID;
+import static com.flashcards.backend.flashcards.constants.ErrorMessages.AUTH_RECOVERY_CODE_INVALID;
+import static com.flashcards.backend.flashcards.constants.ErrorMessages.AUTH_RECOVERY_CODES_EXHAUSTED;
+import static com.flashcards.backend.flashcards.constants.ErrorMessages.AUTH_RECOVERY_CODES_NOT_ENABLED;
 import static com.flashcards.backend.flashcards.constants.ErrorMessages.AUTH_TOTP_CODE_REQUIRED;
 import static com.flashcards.backend.flashcards.constants.ErrorMessages.AUTH_USER_DISABLED;
 import static com.flashcards.backend.flashcards.constants.ErrorMessages.SERVICE_DUPLICATE_EXISTS;
@@ -38,6 +52,7 @@ public class AuthService {
     private final PasswordService passwordService;
     private final JwtService jwtService;
     private final TotpService totpService;
+    private final RecoveryCodeService recoveryCodeService;
 
     public AuthResponseDto register(CreateUserDto createUserDto) {
         log.debug("Registering new user: {}", createUserDto.getUsername());
@@ -158,7 +173,7 @@ public class AuthService {
 
         if (BooleanUtils.isTrue(user.isTotpEnabled())) {
             throw new ServiceException(
-                    "TOTP is already enabled for this user",
+                    TOTP_ALREADY_ENABLED,
                     ErrorCode.SERVICE_DUPLICATE_ERROR
             );
         }
@@ -166,15 +181,25 @@ public class AuthService {
         String secret = totpService.generateSecret();
         String qrCodeDataUri = totpService.generateQrCodeImageUri(secret, user.getUsername());
 
+        List<String> recoveryCodes = recoveryCodeService.generateRecoveryCodes();
+        List<String> hashedCodes = recoveryCodeService.hashRecoveryCodes(recoveryCodes);
+        List<String> formattedCodes = recoveryCodeService.formatCodesForDisplay(recoveryCodes);
+
+        LocalDateTime now = LocalDateTime.now();
         user.setTotpSecret(secret);
-        user.setUpdatedAt(LocalDateTime.now());
+        user.setRecoveryCodeHashes(new HashSet<>(hashedCodes));
+        user.setRecoveryCodesGeneratedAt(now);
+        user.setRecoveryCodesUsedCount(0);
+        user.setUpdatedAt(now);
         userDao.save(user);
 
-        log.debug("TOTP setup completed for user: {}", userId);
+        log.debug("TOTP setup completed for user: {} with {} recovery codes", userId, recoveryCodes.size());
         return TotpSetupDto.builder()
                 .secret(secret)
                 .qrCodeDataUri(qrCodeDataUri)
-                .instructions("Scan this QR code with your authenticator app (Google Authenticator, Authy, etc.) or enter the secret manually")
+                .instructions(RECOVERY_CODE_INSTRUCTIONS)
+                .recoveryCodes(formattedCodes)
+                .recoveryCodeWarning(RECOVERY_CODE_WARNING)
                 .build();
     }
 
@@ -186,14 +211,14 @@ public class AuthService {
 
         if (BooleanUtils.isTrue(user.isTotpEnabled())) {
             throw new ServiceException(
-                    "TOTP is already enabled for this user",
+                    TOTP_ALREADY_ENABLED,
                     ErrorCode.SERVICE_DUPLICATE_ERROR
             );
         }
 
-        if (BooleanUtils.isFalse(isNotBlank(user.getTotpSecret()))) {
+        if (BooleanUtils.isTrue(isBlank(user.getTotpSecret()))) {
             throw new ServiceException(
-                    "TOTP setup must be completed before enabling",
+                    TOTP_SETUP_REQUIRED,
                     ErrorCode.SERVICE_VALIDATION_ERROR
             );
         }
@@ -219,13 +244,16 @@ public class AuthService {
 
         if (BooleanUtils.isFalse(user.isTotpEnabled())) {
             throw new ServiceException(
-                    "TOTP is not enabled for this user",
+                    TOTP_NOT_ENABLED,
                     ErrorCode.SERVICE_NOT_FOUND
             );
         }
 
         user.setTotpEnabled(false);
         user.setTotpSecret(null);
+        user.setRecoveryCodeHashes(null);
+        user.setRecoveryCodesGeneratedAt(null);
+        user.setRecoveryCodesUsedCount(0);
         user.setUpdatedAt(LocalDateTime.now());
         User savedUser = userDao.save(user);
 
@@ -234,6 +262,105 @@ public class AuthService {
 
         log.debug("TOTP disabled successfully for user: {}", userId);
         return buildAuthResponse(accessToken, userDto, false);
+    }
+
+    public AuthResponseDto loginWithRecoveryCode(RecoveryCodeLoginDto recoveryCodeLoginDto) {
+        log.debug("Authenticating user with recovery code: {}", recoveryCodeLoginDto.getUsernameOrEmail());
+
+        User user = findUserByUsernameOrEmail(recoveryCodeLoginDto.getUsernameOrEmail());
+        validateUserCredentials(user, convertToLoginDto(recoveryCodeLoginDto));
+        validateUserAccount(user);
+
+        if (BooleanUtils.isFalse(user.isTotpEnabled())) {
+            throw new ServiceException(AUTH_RECOVERY_CODES_NOT_ENABLED, ErrorCode.AUTH_RECOVERY_CODES_NOT_ENABLED);
+        }
+
+        if (recoveryCodeService.getRemainingCodesCount(user.getRecoveryCodeHashes()) == 0) {
+            throw new ServiceException(AUTH_RECOVERY_CODES_EXHAUSTED, ErrorCode.AUTH_RECOVERY_CODES_EXHAUSTED);
+        }
+
+        if (BooleanUtils.isFalse(recoveryCodeService.validateRecoveryCode(
+                recoveryCodeLoginDto.getRecoveryCode(), user.getRecoveryCodeHashes()))) {
+            throw new ServiceException(AUTH_RECOVERY_CODE_INVALID, ErrorCode.AUTH_RECOVERY_CODE_INVALID);
+        }
+
+        Set<String> updatedCodes = recoveryCodeService.removeUsedCode(
+                recoveryCodeLoginDto.getRecoveryCode(), user.getRecoveryCodeHashes());
+        user.setRecoveryCodeHashes(updatedCodes);
+        user.setRecoveryCodesUsedCount(user.getRecoveryCodesUsedCount() + 1);
+        user.setUpdatedAt(LocalDateTime.now());
+        updateLastLogin(user);
+
+        String accessToken = jwtService.generateToken(user);
+        UserDto userDto = userMapper.toDto(user);
+
+        log.debug("User authenticated successfully with recovery code: {} (remaining codes: {})",
+                user.getUsername(), recoveryCodeService.getRemainingCodesCount(updatedCodes));
+        return buildAuthResponse(accessToken, userDto, user.isTotpEnabled());
+    }
+
+    public RecoveryCodesDto regenerateRecoveryCodes(String userId) {
+        log.debug("Regenerating recovery codes for user: {}", userId);
+
+        User user = userDao.findById(userId)
+                .orElseThrow(() -> new ServiceException(AUTH_CREDENTIALS_INVALID, ErrorCode.AUTH_INVALID_CREDENTIALS));
+
+        if (BooleanUtils.isFalse(user.isTotpEnabled())) {
+            throw new ServiceException(AUTH_RECOVERY_CODES_NOT_ENABLED, ErrorCode.AUTH_RECOVERY_CODES_NOT_ENABLED);
+        }
+
+        List<String> newRecoveryCodes = recoveryCodeService.generateRecoveryCodes();
+        List<String> hashedCodes = recoveryCodeService.hashRecoveryCodes(newRecoveryCodes);
+        List<String> formattedCodes = recoveryCodeService.formatCodesForDisplay(newRecoveryCodes);
+
+        LocalDateTime now = LocalDateTime.now();
+        user.setRecoveryCodeHashes(new HashSet<>(hashedCodes));
+        user.setRecoveryCodesGeneratedAt(now);
+        user.setRecoveryCodesUsedCount(0);
+        user.setUpdatedAt(now);
+        userDao.save(user);
+
+        log.debug("Recovery codes regenerated for user: {} - {} new codes generated", userId, newRecoveryCodes.size());
+
+        return RecoveryCodesDto.builder()
+                .codes(formattedCodes)
+                .remainingCodes(formattedCodes.size())
+                .usedCodes(0)
+                .generatedAt(now)
+                .instructions(RECOVERY_CODE_WARNING)
+                .build();
+    }
+
+    public RecoveryCodesDto getRecoveryCodeStatus(String userId) {
+        log.debug("Getting recovery code status for user: {}", userId);
+
+        User user = userDao.findById(userId)
+                .orElseThrow(() -> new ServiceException(AUTH_CREDENTIALS_INVALID, ErrorCode.AUTH_INVALID_CREDENTIALS));
+
+        if (BooleanUtils.isFalse(user.isTotpEnabled())) {
+            throw new ServiceException(AUTH_RECOVERY_CODES_NOT_ENABLED, ErrorCode.AUTH_RECOVERY_CODES_NOT_ENABLED);
+        }
+
+        int remainingCodes = recoveryCodeService.getRemainingCodesCount(user.getRecoveryCodeHashes());
+        String warning = null;
+
+        if (remainingCodes <= RECOVERY_CODE_MIN_WARNING_THRESHOLD) {
+            warning = RECOVERY_CODE_LOW_WARNING.formatted(remainingCodes);
+        }
+
+        return RecoveryCodesDto.builder()
+                .remainingCodes(remainingCodes)
+                .usedCodes(user.getRecoveryCodesUsedCount())
+                .generatedAt(user.getRecoveryCodesGeneratedAt())
+                .warning(warning)
+                .build();
+    }
+
+    private LoginDto convertToLoginDto(RecoveryCodeLoginDto recoveryCodeLoginDto) {
+        return LoginDto.builder()
+                .usernameOrEmail(recoveryCodeLoginDto.getUsernameOrEmail())
+                .password(recoveryCodeLoginDto.getPassword())
+                .build();
     }
 
     private AuthResponseDto buildAuthResponse(String accessToken, UserDto userDto, boolean totpEnabled) {

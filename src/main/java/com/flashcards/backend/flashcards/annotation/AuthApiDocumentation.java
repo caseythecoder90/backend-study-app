@@ -3,6 +3,9 @@ package com.flashcards.backend.flashcards.annotation;
 import com.flashcards.backend.flashcards.dto.AuthResponseDto;
 import com.flashcards.backend.flashcards.dto.CreateUserDto;
 import com.flashcards.backend.flashcards.dto.LoginDto;
+import com.flashcards.backend.flashcards.dto.OAuth2ProviderDto;
+import com.flashcards.backend.flashcards.dto.RecoveryCodeLoginDto;
+import com.flashcards.backend.flashcards.dto.RecoveryCodesDto;
 import com.flashcards.backend.flashcards.dto.TotpSetupDto;
 import com.flashcards.backend.flashcards.dto.TotpVerificationDto;
 import io.swagger.v3.oas.annotations.Operation;
@@ -111,5 +114,65 @@ public class AuthApiDocumentation {
     @RequestBody(description = "TOTP code for verification",
                  content = @Content(schema = @Schema(implementation = TotpVerificationDto.class)))
     public @interface TotpVerificationBody {
+    }
+
+    @Target(ElementType.METHOD)
+    @Retention(RetentionPolicy.RUNTIME)
+    @Operation(summary = "Login with recovery code", description = "Authenticate using a recovery code when TOTP device is unavailable. Each code can only be used once.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Login successful with recovery code",
+                    content = @Content(schema = @Schema(implementation = AuthResponseDto.class))),
+            @ApiResponse(responseCode = "400", description = "Invalid request format or recovery code format"),
+            @ApiResponse(responseCode = "401", description = "Invalid credentials or recovery code"),
+            @ApiResponse(responseCode = "403", description = "Recovery codes not enabled or all codes exhausted"),
+            @ApiResponse(responseCode = "500", description = "Internal server error during recovery login")
+    })
+    public @interface LoginWithRecoveryCode {
+    }
+
+    @Target(ElementType.PARAMETER)
+    @Retention(RetentionPolicy.RUNTIME)
+    @Parameter(description = "Recovery code login credentials including username, password, and recovery code",
+               required = true, schema = @Schema(implementation = RecoveryCodeLoginDto.class))
+    @RequestBody(description = "Recovery code authentication credentials",
+                 content = @Content(schema = @Schema(implementation = RecoveryCodeLoginDto.class)))
+    public @interface RecoveryCodeLoginBody {
+    }
+
+    @Target(ElementType.METHOD)
+    @Retention(RetentionPolicy.RUNTIME)
+    @Operation(summary = "Regenerate recovery codes", description = "Generate new recovery codes, invalidating all previous codes. Requires authentication.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Recovery codes regenerated successfully",
+                    content = @Content(schema = @Schema(implementation = RecoveryCodesDto.class))),
+            @ApiResponse(responseCode = "401", description = "User not authenticated"),
+            @ApiResponse(responseCode = "403", description = "TOTP not enabled for this user"),
+            @ApiResponse(responseCode = "500", description = "Internal server error during code generation")
+    })
+    public @interface RegenerateRecoveryCodes {
+    }
+
+    @Target(ElementType.METHOD)
+    @Retention(RetentionPolicy.RUNTIME)
+    @Operation(summary = "Get recovery code status", description = "Check remaining recovery codes count and usage statistics")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Recovery code status retrieved successfully",
+                    content = @Content(schema = @Schema(implementation = RecoveryCodesDto.class))),
+            @ApiResponse(responseCode = "401", description = "User not authenticated"),
+            @ApiResponse(responseCode = "403", description = "TOTP not enabled for this user"),
+            @ApiResponse(responseCode = "500", description = "Internal server error during status check")
+    })
+    public @interface GetRecoveryCodeStatus {
+    }
+
+    @Target(ElementType.METHOD)
+    @Retention(RetentionPolicy.RUNTIME)
+    @Operation(summary = "Get OAuth2 providers", description = "Retrieve list of available OAuth2 authentication providers and authorization URLs")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "OAuth2 providers retrieved successfully",
+                    content = @Content(schema = @Schema(implementation = OAuth2ProviderDto.class))),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
+    public @interface GetOAuth2Providers {
     }
 }

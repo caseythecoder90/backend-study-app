@@ -16,6 +16,13 @@ public enum ErrorCode {
     SERVICE_BUSINESS_LOGIC_ERROR("SVC_004", "Business logic error"),
     SERVICE_AUTHORIZATION_ERROR("SVC_005", "Authorization failed"),
     SERVICE_AI_GENERATION_ERROR("SVC_006", "AI generation failed"),
+    SERVICE_AI_SERVICE_UNAVAILABLE("SVC_007", "AI service unavailable"),
+    SERVICE_AI_RATE_LIMIT_EXCEEDED("SVC_008", "AI rate limit exceeded"),
+    SERVICE_AI_INVALID_CONTENT("SVC_009", "AI invalid content"),
+    SERVICE_AI_MODEL_ERROR("SVC_010", "AI model error"),
+    SERVICE_AI_QUOTA_EXCEEDED("SVC_011", "AI quota exceeded"),
+    SERVICE_AI_INVALID_IMAGE("SVC_012", "AI invalid image"),
+    SERVICE_AI_PROCESSING_TIMEOUT("SVC_013", "AI processing timeout"),
 
     // Controller Layer Error Codes
     CONTROLLER_BAD_REQUEST("CTL_001", "Bad request"),
@@ -30,7 +37,15 @@ public enum ErrorCode {
     AUTH_PASSWORD_INVALID("AUTH_004", "Password validation failed"),
     AUTH_USER_DISABLED("AUTH_005", "User account disabled"),
     AUTH_TOTP_INVALID("AUTH_006", "Invalid TOTP code"),
-    AUTH_TOTP_REQUIRED("AUTH_007", "TOTP verification required");
+    AUTH_TOTP_REQUIRED("AUTH_007", "TOTP verification required"),
+    AUTH_RECOVERY_CODE_INVALID("AUTH_008", "Invalid recovery code"),
+    AUTH_RECOVERY_CODES_EXHAUSTED("AUTH_009", "All recovery codes have been used"),
+    AUTH_RECOVERY_CODES_NOT_ENABLED("AUTH_010", "Recovery codes are not enabled"),
+
+    // Operations Error Codes
+    ENCRYPTION_ERROR("OPS_001", "Encryption failed"),
+    DECRYPTION_ERROR("OPS_002", "Decryption failed"),
+    INVALID_INPUT("OPS_003", "Invalid input provided");
 
     private final String code;
     private final String defaultMessage;

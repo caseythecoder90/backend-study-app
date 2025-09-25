@@ -21,7 +21,7 @@ This is a Spring Boot backend for a flashcard application using MongoDB as the d
 - Never skip layers or access repositories directly from services
 
 ### Exception Handling Strategy
-- **DAO Layer**: Catch all database exceptions and wrap them in `DaoException` with appropriate `ErrorCode` enum
+- **DAO Layer**: Catch all database exceptions and wrap them in `DaoException` with appropriate `ErrorCode` enum? 
 - **Service Layer**: Catch DAO exceptions and either handle them or wrap in `ServiceException`
 - **Controller Layer**: Use `@RestControllerAdvice` for global exception handling
 - All exceptions use `ErrorCode` enum for consistent error identification
@@ -45,12 +45,24 @@ Always use Apache Commons and Java utility classes:
 - Keep imports organized: standard imports, then blank line, then static imports
 
 ### Constants Standards
-- NEVER define constants in the same file as the class that uses them
-- ALWAYS create dedicated constants files in the `constants` package
-- For logging, do not use constants. 
-- Use meaningful constant names that clearly indicate their purpose
-- Group related constants together (e.g., `ErrorMessages.java`, `JwtConstants.java`)
+- **API Paths**: Define directly in controllers using `@RequestMapping` annotations (e.g., `@RequestMapping("/api/auth")`). Do NOT extract API paths to constants files
+- **String Literals in Methods**: Extract to constants when used as arguments or within method logic
+- **Entity Names**: Use constants like `ENTITY_USER`, `ENTITY_DECK` in ErrorMessages for consistent entity naming
+- **Error Messages**: All error messages go in `ErrorMessages.java` with placeholders for formatting
+- For logging, do not use constants - use inline strings
 - Constants should be `public static final` and follow UPPER_SNAKE_CASE naming
+- **Constants File Organization** (one file per layer/concern):
+  - `ErrorMessages.java` - All error message templates and entity name constants (e.g., `ENTITY_USER = "User"`)
+  - `AuthConstants.java` - Authentication/authorization related constants
+  - `SecurityConstants.java` - Security configuration constants
+  - Additional constants files as needed for specific concerns (e.g., `JwtConstants.java`)
+- **Import Pattern**: Use static imports for specific constants (never wildcards)
+- **Usage Pattern**: Constants are used for:
+  - Error message templates with placeholders
+  - Entity names used in error messages
+  - Business logic values (limits, thresholds, etc.)
+  - Security/auth configuration values
+  - Do NOT use for API paths or request mappings
 
 ### String Formatting Standards
 - Use `String.formatted()` instance method instead of `String.format()` static method
@@ -80,6 +92,18 @@ Always use Apache Commons and Java utility classes:
 - Use `Objects.nonNull()`, `Objects.isNull()`, or `Optional`
 - Use `StringUtils.isNotBlank()` instead of checking for null/empty strings
 - Use `CollectionUtils.isNotEmpty()` for collections
+
+### Lombok Usage Standards
+- **ALWAYS use Lombok annotations** for DTOs and model classes to reduce boilerplate
+- **Required Lombok annotations for DTOs**:
+  - `@Data` - Generates getters, setters, toString, equals, and hashCode
+  - `@Builder` - Provides builder pattern for object creation
+  - `@NoArgsConstructor` - Generates no-args constructor (required for Jackson)
+  - `@AllArgsConstructor` - Generates all-args constructor
+- **For immutable DTOs**: Use `@Value` instead of `@Data`
+- **For entities/models**: Consider using individual annotations (`@Getter`, `@Setter`) instead of `@Data` to avoid toString/equals issues
+- **Never write manual getters/setters** when Lombok can generate them
+- **For logging**: Use `@Slf4j` for SLF4J logger injection
 
 ## Commands
 

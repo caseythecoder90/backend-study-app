@@ -2,14 +2,13 @@ package com.flashcards.backend.flashcards.service;
 
 import com.flashcards.backend.flashcards.dao.DeckDao;
 import com.flashcards.backend.flashcards.dao.FlashcardDao;
-import com.flashcards.backend.flashcards.dto.AIGenerateRequest;
+import com.flashcards.backend.flashcards.dto.AIGenerateRequestDto;
 import com.flashcards.backend.flashcards.dto.CreateFlashcardDto;
 import com.flashcards.backend.flashcards.dto.FlashcardDto;
 import com.flashcards.backend.flashcards.exception.DaoException;
 import com.flashcards.backend.flashcards.exception.ErrorCode;
 import com.flashcards.backend.flashcards.exception.ServiceException;
 import com.flashcards.backend.flashcards.mapper.FlashcardMapper;
-import com.flashcards.backend.flashcards.model.Deck;
 import com.flashcards.backend.flashcards.model.Flashcard;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -39,6 +38,7 @@ public class FlashcardService {
     private final FlashcardDao flashcardDao;
     private final DeckDao deckDao;
     private final FlashcardMapper flashcardMapper;
+    private final AIService aiService;
 
     @Transactional(readOnly = true)
     public Optional<FlashcardDto> findById(String id) {
@@ -214,17 +214,21 @@ public class FlashcardService {
                 () -> SERVICE_OPERATION_FAILED.formatted("count all", "flashcards"));
     }
 
-    // TODO: Implement AI service integration
-    public List<FlashcardDto> generateFlashcardsFromText(AIGenerateRequest request) {
+    public List<FlashcardDto> generateFlashcardsFromText(AIGenerateRequestDto request) {
         return executeWithExceptionHandling(() -> {
             validateAIGenerateRequest(request);
             validateDeckExists(request.getDeckId());
 
-            // TODO: Integrate with AI service to generate flashcards from text
-            throw new ServiceException(
-                    "AI flashcard generation not yet implemented",
-                    ErrorCode.SERVICE_AI_GENERATION_ERROR
-            );
+            // Generate flashcards using AI service
+            List<CreateFlashcardDto> generatedFlashcards = aiService.generateFlashcardsFromText(request);
+
+            if (CollectionUtils.isEmpty(generatedFlashcards)) {
+                log.warn("AI service returned no flashcards for request: {}", request);
+                return Collections.emptyList();
+            }
+
+            // Create the flashcards using the existing bulk creation method
+            return createMultipleFlashcards(generatedFlashcards);
         }, () -> SERVICE_OPERATION_FAILED.formatted("generate from AI", ENTITY_FLASHCARD));
     }
 
@@ -284,7 +288,7 @@ public class FlashcardService {
         Objects.requireNonNull(flashcardDto, ENTITY_FLASHCARD + " data cannot be null");
     }
 
-    private void validateAIGenerateRequest(AIGenerateRequest request) {
+    private void validateAIGenerateRequest(AIGenerateRequestDto request) {
         Objects.requireNonNull(request, "AI generate request cannot be null");
 
         if (StringUtils.isBlank(request.getDeckId())) {

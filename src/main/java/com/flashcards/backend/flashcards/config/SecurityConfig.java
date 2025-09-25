@@ -1,5 +1,6 @@
 package com.flashcards.backend.flashcards.config;
 
+import com.flashcards.backend.flashcards.oauth.OAuth2AuthenticationSuccessHandler;
 import com.flashcards.backend.flashcards.security.JwtAuthenticationEntryPoint;
 import com.flashcards.backend.flashcards.security.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
@@ -20,7 +21,8 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.List;
 
-import static com.flashcards.backend.flashcards.constants.SecurityConstants.AUTH_ENDPOINTS;
+import static com.flashcards.backend.flashcards.constants.SecurityConstants.PROTECTED_AUTH_ENDPOINTS;
+import static com.flashcards.backend.flashcards.constants.SecurityConstants.PUBLIC_AUTH_ENDPOINTS;
 import static com.flashcards.backend.flashcards.constants.SecurityConstants.CORS_MAX_AGE_SECONDS;
 import static com.flashcards.backend.flashcards.constants.SecurityConstants.HTTP_METHOD_DELETE;
 import static com.flashcards.backend.flashcards.constants.SecurityConstants.HTTP_METHOD_GET;
@@ -36,6 +38,7 @@ import static com.flashcards.backend.flashcards.constants.SecurityConstants.SWAG
 public class SecurityConfig {
     private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final OAuth2AuthenticationSuccessHandler oAuth2AuthenticationSuccessHandler;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -45,13 +48,18 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .exceptionHandling(exceptions -> exceptions.authenticationEntryPoint(jwtAuthenticationEntryPoint))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(AUTH_ENDPOINTS).permitAll()
+                        .requestMatchers(PUBLIC_AUTH_ENDPOINTS).permitAll()
                         .requestMatchers(SWAGGER_ENDPOINTS).permitAll()
                         .requestMatchers(PUBLIC_ENDPOINTS).permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/decks/public").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/decks/category/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/decks/search").permitAll()
+                        .requestMatchers("/oauth2/**", "/login/oauth2/**").permitAll()
+                        .requestMatchers(PROTECTED_AUTH_ENDPOINTS).authenticated()
                         .anyRequest().authenticated()
+                )
+                .oauth2Login(oauth2 -> oauth2
+                        .successHandler(oAuth2AuthenticationSuccessHandler)
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();

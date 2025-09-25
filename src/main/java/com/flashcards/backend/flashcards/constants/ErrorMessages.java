@@ -51,6 +51,14 @@ public class ErrorMessages {
     public static final String AUTH_TOTP_SECRET_USERNAME_NULL = "Secret and username cannot be null or empty";
     public static final String AUTH_TOTP_QR_GENERATION_FAILED = "Failed to generate QR code: %s";
     public static final String AUTH_TOTP_VERIFICATION_FAILED = "TOTP verification failed: secret or code is null/empty";
+    public static final String AUTH_RECOVERY_CODE_INVALID = "Invalid or already used recovery code";
+    public static final String AUTH_RECOVERY_CODE_REQUIRED = "Recovery code is required";
+    public static final String AUTH_RECOVERY_CODES_EXHAUSTED = "All recovery codes have been used. Please contact support";
+    public static final String AUTH_RECOVERY_CODES_NOT_ENABLED = "Recovery codes are not enabled for this account";
+    public static final String AUTH_RECOVERY_CODES_GENERATION_FAILED = "Failed to generate recovery codes: %s";
+    public static final String AUTH_OAUTH_PROVIDER_NOT_SUPPORTED = "OAuth provider '%s' is not supported";
+    public static final String AUTH_OAUTH_EMAIL_NOT_FOUND = "Email not found from OAuth2 provider";
+    public static final String AUTH_OAUTH_PROCESSING_FAILED = "OAuth2 authentication processing failed: %s";
 
     // Error Response Field Names
     public static final String ERROR_FIELD_TIMESTAMP = "timestamp";
@@ -71,6 +79,37 @@ public class ErrorMessages {
     public static final String ENTITY_DECK = "Deck";
     public static final String ENTITY_FLASHCARD = "Flashcard";
     public static final String ENTITY_STUDY_SESSION = "Study Session";
+
+    // Encryption Error Messages
+    public static final String ENCRYPTION_FAILED = "Failed to encrypt text: %s";
+    public static final String DECRYPTION_FAILED = "Failed to decrypt text: %s";
+    public static final String ENCRYPTION_TEXT_NULL_EMPTY = "Text to encrypt cannot be null or empty";
+    public static final String DECRYPTION_TEXT_NULL_EMPTY = "Text to decrypt cannot be null or empty";
+    public static final String ENCRYPTION_SERVICE_UNAVAILABLE = "Encryption service is not available";
+
+    // AI Service Error Messages
+    public static final String AI_REQUEST_NULL = "AI generation request cannot be null";
+    public static final String AI_TEXT_CONTENT_REQUIRED = "Text content is required for AI generation";
+    public static final String AI_TEXT_LENGTH_EXCEEDED = "Text content exceeds maximum allowed length of %s";
+    public static final String AI_FLASHCARD_COUNT_EXCEEDED = "Flashcard count exceeds maximum allowed of %s";
+    public static final String AI_RESPONSE_PARSE_FAILED = "Failed to parse AI-generated flashcard response";
+    public static final String AI_FLASHCARD_MAP_CONVERSION_FAILED = "Failed to convert flashcard map to DTO";
+    public static final String AI_CODE_BLOCK_PARSE_FAILED = "Failed to parse code block";
+    public static final String AI_DIFFICULTY_LEVEL_INVALID = "Invalid difficulty level: %s, defaulting to NOT_SET";
+    public static final String AI_CONTENT_TYPE_INVALID = "Invalid content type: %s, defaulting to TEXT_ONLY";
+    public static final String AI_SERVICE_UNEXPECTED_ERROR = "Unexpected error in AIService";
+
+    // AI Error Detection Keywords
+    public static final String AI_ERROR_RATE_LIMIT = "rate limit";
+    public static final String AI_ERROR_TOO_MANY_REQUESTS = "too many requests";
+    public static final String AI_ERROR_QUOTA = "quota";
+    public static final String AI_ERROR_BILLING = "billing";
+    public static final String AI_ERROR_TIMEOUT = "timeout";
+    public static final String AI_ERROR_TIMED_OUT = "timed out";
+    public static final String AI_ERROR_UNAVAILABLE = "unavailable";
+    public static final String AI_ERROR_SERVICE = "service";
+    public static final String AI_ERROR_MODEL = "model";
+    public static final String AI_ERROR_INVALID = "invalid";
 
     private ErrorMessages() {
         // Private constructor to prevent instantiation

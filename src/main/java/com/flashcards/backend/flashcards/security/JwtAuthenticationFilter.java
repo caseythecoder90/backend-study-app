@@ -21,7 +21,6 @@ import static com.flashcards.backend.flashcards.constants.SecurityConstants.SECU
 import static com.flashcards.backend.flashcards.constants.SecurityConstants.SECURITY_HEADER_BEARER_PREFIX;
 import static com.flashcards.backend.flashcards.constants.SecurityConstants.SECURITY_HEADER_BEARER_PREFIX_LENGTH;
 import static java.util.Objects.isNull;
-import static java.util.Objects.nonNull;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 @Slf4j
@@ -32,7 +31,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
-                                   FilterChain filterChain) throws ServletException, IOException {
+                                    FilterChain filterChain) throws ServletException, IOException {
         String authHeader = request.getHeader(SECURITY_HEADER_AUTHORIZATION);
 
         if (isNotBlank(authHeader) && authHeader.startsWith(SECURITY_HEADER_BEARER_PREFIX)) {

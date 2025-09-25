@@ -13,7 +13,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class AIGenerateRequest {
+public class AIGenerateRequestDto {
     @NotBlank(message = "Deck ID is required")
     private String deckId;
 
@@ -21,11 +21,11 @@ public class AIGenerateRequest {
     private String userId;
 
     @NotBlank(message = "Text content is required for AI generation")
-    @Size(min = 50, max = 10000, message = "Text must be between 50 and 10000 characters")
+    @Size(min = 50, max = 100000, message = "Text must be between 50 and 10000 characters")
     private String text;
 
     @Min(value = 1, message = "Count must be at least 1")
-    @Max(value = 20, message = "Maximum 20 flashcards can be generated at once")
+    @Max(value = 30, message = "Maximum 20 flashcards can be generated at once")
     private int count;
 
     @Size(max = 20, message = "Difficulty must not exceed 20 characters")

@@ -2,9 +2,18 @@ package com.flashcards.backend.flashcards.constants;
 
 public class SecurityConstants {
 
-    // Authentication Endpoints
-    public static final String[] AUTH_ENDPOINTS = {
-            "/api/auth/**"
+    // Public Authentication Endpoints (no token required)
+    public static final String[] PUBLIC_AUTH_ENDPOINTS = {
+            "/api/auth/register",
+            "/api/auth/login",
+            "/api/auth/login/recovery",
+            "/api/auth/oauth2/providers"
+    };
+
+    // Protected Authentication Endpoints (token required)
+    public static final String[] PROTECTED_AUTH_ENDPOINTS = {
+            "/api/auth/totp/**",
+            "/api/auth/recovery-codes/**"
     };
 
     // Swagger/OpenAPI Endpoints
@@ -43,6 +52,10 @@ public class SecurityConstants {
     public static final String SWAGGER_SECURITY_SCHEME_NAME = "bearerAuth";
     public static final String SWAGGER_SECURITY_SCHEME_BEARER_FORMAT = "JWT";
     public static final String SWAGGER_SECURITY_SCHEME_DESCRIPTION = "JWT Authorization header using the Bearer scheme";
+
+    // Encryption
+    public static final String ENC_PREFIX = "ENC(";
+    public static final String ENC_SUFFIX = ")";
 
     private SecurityConstants() {
         // Private constructor to prevent instantiation

@@ -1,5 +1,6 @@
 package com.flashcards.backend.flashcards.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.flashcards.backend.flashcards.model.Flashcard;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.Valid;
@@ -53,13 +54,16 @@ public class FlashcardDto {
     @Schema(description = "Number of times answered incorrectly", example = "3")
     private int timesIncorrect;
 
-    @Schema(description = "Timestamp when the flashcard was created")
+    @Schema(description = "Timestamp when the flashcard was created", example = "2024-01-15T10:30:00.000Z")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
     private LocalDateTime createdAt;
 
-    @Schema(description = "Timestamp when the flashcard was last updated")
+    @Schema(description = "Timestamp when the flashcard was last updated", example = "2024-01-15T10:30:00.000Z")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
     private LocalDateTime updatedAt;
 
-    @Schema(description = "Timestamp when the flashcard was last studied")
+    @Schema(description = "Timestamp when the flashcard was last studied", example = "2024-01-15T10:30:00.000Z")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
     private LocalDateTime lastStudiedAt;
 
     @Data

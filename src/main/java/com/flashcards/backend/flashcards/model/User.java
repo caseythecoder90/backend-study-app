@@ -40,6 +40,14 @@ public class User {
     private String totpSecret;
     private boolean totpEnabled;
 
+    private Set<String> recoveryCodeHashes;
+    private LocalDateTime recoveryCodesGeneratedAt;
+    private int recoveryCodesUsedCount;
+
+    private String oauthProvider;
+    private String oauthId;
+    private String profileImageUrl;
+
     private List<String> deckIds;
 
     private LocalDateTime createdAt;

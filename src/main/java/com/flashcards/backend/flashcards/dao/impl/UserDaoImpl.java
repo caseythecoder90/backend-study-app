@@ -150,6 +150,19 @@ public class UserDaoImpl implements UserDao {
     }
 
     @Override
+    public Optional<User> findByOauthProviderAndOauthId(String oauthProvider, String oauthId) {
+        return executeWithExceptionHandling(() ->
+                Optional.ofNullable(oauthProvider)
+                        .filter(StringUtils::isNotBlank)
+                        .flatMap(provider -> Optional.ofNullable(oauthId)
+                                .filter(StringUtils::isNotBlank)
+                                .flatMap(id -> userRepository.findByOauthProviderAndOauthId(provider, id))),
+                ErrorCode.DAO_FIND_ERROR,
+                DAO_FIND_BY_FIELD_ERROR.formatted(ENTITY_USER, "oauthProvider and oauthId", oauthProvider + ":" + oauthId)
+        );
+    }
+
+    @Override
     public long count() {
         return executeWithExceptionHandling(
                 userRepository::count,

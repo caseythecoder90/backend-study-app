@@ -1,5 +1,6 @@
 package com.flashcards.backend.flashcards.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -33,10 +34,12 @@ public class UserDto {
     @Schema(description = "List of flashcard deck IDs owned by the user")
     private List<String> deckIds;
 
-    @Schema(description = "Account creation timestamp")
+    @Schema(description = "Account creation timestamp", example = "2024-01-15T10:30:00.000Z")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
     private LocalDateTime createdAt;
 
-    @Schema(description = "Last update timestamp")
+    @Schema(description = "Last update timestamp", example = "2024-01-15T10:30:00.000Z")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
     private LocalDateTime updatedAt;
     // Note: password is intentionally excluded from DTOs for security
 }
