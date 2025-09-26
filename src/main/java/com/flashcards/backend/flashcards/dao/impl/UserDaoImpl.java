@@ -3,21 +3,21 @@ package com.flashcards.backend.flashcards.dao.impl;
 import com.flashcards.backend.flashcards.dao.UserDao;
 import com.flashcards.backend.flashcards.exception.DaoException;
 import com.flashcards.backend.flashcards.exception.ErrorCode;
+import com.flashcards.backend.flashcards.model.Role;
 import com.flashcards.backend.flashcards.model.User;
 import com.flashcards.backend.flashcards.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Supplier;
 
+import static com.flashcards.backend.flashcards.constants.ErrorMessages.DAO_COUNT_BY_FIELD_ERROR;
 import static com.flashcards.backend.flashcards.constants.ErrorMessages.DAO_COUNT_ERROR;
 import static com.flashcards.backend.flashcards.constants.ErrorMessages.DAO_DELETE_ERROR;
 import static com.flashcards.backend.flashcards.constants.ErrorMessages.DAO_DUPLICATE_ENTRY;
@@ -31,6 +31,8 @@ import static com.flashcards.backend.flashcards.constants.ErrorMessages.DAO_ID_N
 import static com.flashcards.backend.flashcards.constants.ErrorMessages.DAO_SAVE_ERROR;
 import static com.flashcards.backend.flashcards.constants.ErrorMessages.DAO_UPDATE_ERROR;
 import static com.flashcards.backend.flashcards.constants.ErrorMessages.ENTITY_USER;
+import static java.util.Objects.requireNonNull;
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 @Slf4j
 @Component
@@ -42,7 +44,7 @@ public class UserDaoImpl implements UserDao {
     public Optional<User> findById(String id) {
         return executeWithExceptionHandling(() ->
                 Optional.ofNullable(id)
-                        .filter(StringUtils::isNotBlank)
+                        .filter(str -> isNotBlank(str))
                         .flatMap(userRepository::findById),
                 ErrorCode.DAO_FIND_ERROR,
                 DAO_FIND_BY_ID_ERROR.formatted(ENTITY_USER, id)
@@ -53,7 +55,7 @@ public class UserDaoImpl implements UserDao {
     public Optional<User> findByUsername(String username) {
         return executeWithExceptionHandling(() ->
                 Optional.ofNullable(username)
-                        .filter(StringUtils::isNotBlank)
+                        .filter(str -> isNotBlank(str))
                         .flatMap(userRepository::findByUsername),
                 ErrorCode.DAO_FIND_ERROR,
                 DAO_FIND_BY_FIELD_ERROR.formatted(ENTITY_USER, "username", username)
@@ -64,7 +66,7 @@ public class UserDaoImpl implements UserDao {
     public Optional<User> findByEmail(String email) {
         return executeWithExceptionHandling(() ->
                 Optional.ofNullable(email)
-                        .filter(StringUtils::isNotBlank)
+                        .filter(str -> isNotBlank(str))
                         .flatMap(userRepository::findByEmail),
                 ErrorCode.DAO_FIND_ERROR,
                 DAO_FIND_BY_FIELD_ERROR.formatted(ENTITY_USER, "email", email)
@@ -83,7 +85,7 @@ public class UserDaoImpl implements UserDao {
     @Override
     public User save(User user) {
         return executeWithExceptionHandling(() -> {
-            Objects.requireNonNull(user, DAO_ENTITY_NULL.formatted(ENTITY_USER));
+            requireNonNull(user, DAO_ENTITY_NULL.formatted(ENTITY_USER));
 
             return Optional.of(user)
                     .map(u -> {
@@ -99,8 +101,8 @@ public class UserDaoImpl implements UserDao {
     @Override
     public User update(User user) {
         return executeWithExceptionHandling(() -> {
-            Objects.requireNonNull(user, DAO_ENTITY_NULL.formatted(ENTITY_USER));
-            Objects.requireNonNull(user.getId(), DAO_ID_NULL.formatted(ENTITY_USER));
+            requireNonNull(user, DAO_ENTITY_NULL.formatted(ENTITY_USER));
+            requireNonNull(user.getId(), DAO_ID_NULL.formatted(ENTITY_USER));
 
             return findById(user.getId())
                     .map(existing -> {
@@ -119,7 +121,7 @@ public class UserDaoImpl implements UserDao {
     public void deleteById(String id) {
         executeWithExceptionHandling(() -> {
             Optional.ofNullable(id)
-                    .filter(StringUtils::isNotBlank)
+                    .filter(str -> isNotBlank(str))
                     .ifPresent(userRepository::deleteById);
             return null;
         }, ErrorCode.DAO_DELETE_ERROR, DAO_DELETE_ERROR.formatted(ENTITY_USER, id));
@@ -129,7 +131,7 @@ public class UserDaoImpl implements UserDao {
     public boolean existsByUsername(String username) {
         return executeWithExceptionHandling(() ->
                 Optional.ofNullable(username)
-                        .filter(StringUtils::isNotBlank)
+                        .filter(str -> isNotBlank(str))
                         .map(userRepository::existsByUsername)
                         .orElse(false),
                 ErrorCode.DAO_FIND_ERROR,
@@ -141,7 +143,7 @@ public class UserDaoImpl implements UserDao {
     public boolean existsByEmail(String email) {
         return executeWithExceptionHandling(() ->
                 Optional.ofNullable(email)
-                        .filter(StringUtils::isNotBlank)
+                        .filter(str -> isNotBlank(str))
                         .map(userRepository::existsByEmail)
                         .orElse(false),
                 ErrorCode.DAO_FIND_ERROR,
@@ -153,12 +155,21 @@ public class UserDaoImpl implements UserDao {
     public Optional<User> findByOauthProviderAndOauthId(String oauthProvider, String oauthId) {
         return executeWithExceptionHandling(() ->
                 Optional.ofNullable(oauthProvider)
-                        .filter(StringUtils::isNotBlank)
+                        .filter(str -> isNotBlank(str))
                         .flatMap(provider -> Optional.ofNullable(oauthId)
-                                .filter(StringUtils::isNotBlank)
+                                .filter(str -> isNotBlank(str))
                                 .flatMap(id -> userRepository.findByOauthProviderAndOauthId(provider, id))),
                 ErrorCode.DAO_FIND_ERROR,
                 DAO_FIND_BY_FIELD_ERROR.formatted(ENTITY_USER, "oauthProvider and oauthId", oauthProvider + ":" + oauthId)
+        );
+    }
+
+    @Override
+    public List<User> findByRole(Role role) {
+        return executeWithExceptionHandling(
+                () -> userRepository.findByRolesContaining(role),
+                ErrorCode.DAO_FIND_ERROR,
+                DAO_FIND_BY_FIELD_ERROR.formatted(ENTITY_USER, "role", role)
         );
     }
 
@@ -168,6 +179,15 @@ public class UserDaoImpl implements UserDao {
                 userRepository::count,
                 ErrorCode.DAO_FIND_ERROR,
                 DAO_COUNT_ERROR.formatted("users")
+        );
+    }
+
+    @Override
+    public long countByRole(Role role) {
+        return executeWithExceptionHandling(
+                () -> userRepository.countByRolesContaining(role),
+                ErrorCode.DAO_FIND_ERROR,
+                DAO_COUNT_BY_FIELD_ERROR.formatted(ENTITY_USER, "role", role)
         );
     }
 

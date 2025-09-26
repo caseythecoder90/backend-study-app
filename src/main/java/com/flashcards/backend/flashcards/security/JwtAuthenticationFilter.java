@@ -7,20 +7,22 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.BooleanUtils;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import static com.flashcards.backend.flashcards.constants.SecurityConstants.SECURITY_HEADER_AUTHORIZATION;
 import static com.flashcards.backend.flashcards.constants.SecurityConstants.SECURITY_HEADER_BEARER_PREFIX;
 import static com.flashcards.backend.flashcards.constants.SecurityConstants.SECURITY_HEADER_BEARER_PREFIX_LENGTH;
 import static java.util.Objects.isNull;
+import static org.apache.commons.lang3.BooleanUtils.isTrue;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 @Slf4j
@@ -38,18 +40,24 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             String token = authHeader.substring(SECURITY_HEADER_BEARER_PREFIX_LENGTH);
 
             try {
-                if (BooleanUtils.isTrue(jwtService.isTokenValid(token)) && isNull(SecurityContextHolder.getContext().getAuthentication())) {
+                if (isTrue(jwtService.isTokenValid(token)) && isNull(SecurityContextHolder.getContext().getAuthentication())) {
                     String userId = jwtService.extractUserId(token);
                     String username = jwtService.extractUsername(token);
+                    List<String> authorities = jwtService.extractAuthorities(token);
 
                     if (isNotBlank(userId) && isNotBlank(username)) {
+                        // Convert string authorities to Spring Security GrantedAuthority objects
+                        List<SimpleGrantedAuthority> grantedAuthorities = authorities.stream()
+                                .map(SimpleGrantedAuthority::new)
+                                .collect(Collectors.toList());
+
                         UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
-                                userId, null, new ArrayList<>()
+                                userId, null, grantedAuthorities
                         );
                         authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                         SecurityContextHolder.getContext().setAuthentication(authToken);
 
-                        log.debug("User authenticated: {} (ID: {})", username, userId);
+                        log.debug("User authenticated: {} (ID: {}) with roles: {}", username, userId, authorities);
                     }
                 }
             } catch (Exception e) {

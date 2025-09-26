@@ -1,6 +1,5 @@
 package com.flashcards.backend.flashcards.oauth;
 
-import org.apache.commons.lang3.StringUtils;
 
 import java.util.Map;
 
@@ -8,6 +7,7 @@ import static com.flashcards.backend.flashcards.constants.AuthConstants.GITHUB_A
 import static com.flashcards.backend.flashcards.constants.AuthConstants.GITHUB_ATTR_EMAIL;
 import static com.flashcards.backend.flashcards.constants.AuthConstants.GITHUB_ATTR_ID;
 import static com.flashcards.backend.flashcards.constants.AuthConstants.GITHUB_ATTR_NAME;
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 public class GitHubOAuth2UserInfo extends OAuth2UserInfo {
 
@@ -38,7 +38,7 @@ public class GitHubOAuth2UserInfo extends OAuth2UserInfo {
     @Override
     public String getFirstName() {
         String name = getName();
-        if (StringUtils.isNotBlank(name)) {
+        if (isNotBlank(name)) {
             String[] nameParts = name.split("\\s+");
             return nameParts.length > 0 ? nameParts[0] : null;
         }
@@ -48,7 +48,7 @@ public class GitHubOAuth2UserInfo extends OAuth2UserInfo {
     @Override
     public String getLastName() {
         String name = getName();
-        if (StringUtils.isNotBlank(name)) {
+        if (isNotBlank(name)) {
             String[] nameParts = name.split("\\s+");
             return nameParts.length > 1 ? nameParts[nameParts.length - 1] : null;
         }

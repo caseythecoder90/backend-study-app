@@ -24,7 +24,6 @@ import org.springframework.web.servlet.NoHandlerFoundException;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -32,6 +31,9 @@ import static com.flashcards.backend.flashcards.constants.ErrorMessages.CONTROLL
 import static com.flashcards.backend.flashcards.constants.ErrorMessages.CONTROLLER_INVALID_REQUEST;
 import static com.flashcards.backend.flashcards.constants.ErrorMessages.CONTROLLER_MISSING_PARAMETER;
 import static com.flashcards.backend.flashcards.constants.ErrorMessages.CONTROLLER_RESOURCE_NOT_FOUND;
+import static java.util.Objects.isNull;
+import static java.util.Objects.nonNull;
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 @Slf4j
 @RestControllerAdvice
@@ -189,7 +191,7 @@ public class GlobalExceptionHandler {
             HttpServletRequest request) {
 
         String supportedTypes = ex.getSupportedMediaTypes().stream()
-                .map(Objects::toString)
+                .map(Object::toString)
                 .collect(Collectors.joining(", "));
 
         ErrorResponse errorResponse = buildErrorResponse(
@@ -242,7 +244,7 @@ public class GlobalExceptionHandler {
 
         String message = "Data integrity violation";
 
-        if (Objects.nonNull(ex.getMessage())) {
+        if (nonNull(ex.getMessage())) {
             if (ex.getMessage().contains("duplicate")) {
                 message = "A resource with the same key already exists";
             } else if (ex.getMessage().contains("foreign key")) {
@@ -313,7 +315,7 @@ public class GlobalExceptionHandler {
     }
 
     private HttpStatus mapErrorCodeToHttpStatus(ErrorCode errorCode) {
-        if (Objects.isNull(errorCode)) {
+        if (isNull(errorCode)) {
             return HttpStatus.INTERNAL_SERVER_ERROR;
         }
 

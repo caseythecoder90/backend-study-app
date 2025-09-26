@@ -21,6 +21,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.List;
 
+import static com.flashcards.backend.flashcards.constants.SecurityConstants.ADMIN_ONLY_ENDPOINTS;
 import static com.flashcards.backend.flashcards.constants.SecurityConstants.PROTECTED_AUTH_ENDPOINTS;
 import static com.flashcards.backend.flashcards.constants.SecurityConstants.PUBLIC_AUTH_ENDPOINTS;
 import static com.flashcards.backend.flashcards.constants.SecurityConstants.CORS_MAX_AGE_SECONDS;
@@ -55,6 +56,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/decks/category/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/decks/search").permitAll()
                         .requestMatchers("/oauth2/**", "/login/oauth2/**").permitAll()
+                        .requestMatchers(ADMIN_ONLY_ENDPOINTS).hasRole("ADMIN")
                         .requestMatchers(PROTECTED_AUTH_ENDPOINTS).authenticated()
                         .anyRequest().authenticated()
                 )

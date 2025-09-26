@@ -14,8 +14,6 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.BooleanUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.chat.prompt.ChatOptions;
 import org.springframework.ai.chat.prompt.Prompt;
@@ -65,6 +63,12 @@ import static com.flashcards.backend.flashcards.constants.ErrorMessages.AI_RESPO
 import static com.flashcards.backend.flashcards.constants.ErrorMessages.AI_RESPONSE_TRUNCATED;
 import static com.flashcards.backend.flashcards.constants.ErrorMessages.AI_TEXT_LENGTH_EXCEEDED;
 import static com.flashcards.backend.flashcards.constants.ErrorMessages.SERVICE_OPERATION_FAILED;
+import static java.util.Objects.isNull;
+import static java.util.Objects.nonNull;
+import static java.util.Objects.requireNonNull;
+import static org.apache.commons.lang3.BooleanUtils.isFalse;
+import static org.apache.commons.lang3.BooleanUtils.isTrue;
+import static org.apache.commons.lang3.StringUtils.isBlank;
 
 @Slf4j
 @Service
@@ -83,7 +87,7 @@ public class AIService {
             log.debug("Sending prompt to AI service: {}", promptText);
 
             // Get the selected model enum (with default)
-            AIModelEnum selectedModel = Objects.nonNull(request.getModel()) ? request.getModel() : AIModelEnum.GPT_4O_MINI;
+            AIModelEnum selectedModel = nonNull(request.getModel()) ? request.getModel() : AIModelEnum.GPT_4O_MINI;
 
             // Try the primary model with fallback support
             return generateWithFallback(selectedModel, promptText, request);
@@ -98,7 +102,7 @@ public class AIService {
             log.warn("Primary model {} failed: {}", primaryModel.getDisplayName(), primaryException.getMessage());
 
             // Check if fallback is enabled
-            if (BooleanUtils.isFalse(aiProperties.getFallback().isEnabled())) {
+            if (isFalse(aiProperties.getFallback().isEnabled())) {
                 log.error("Fallback disabled, throwing original exception");
                 throw new ServiceException(
                     AI_MODEL_UNAVAILABLE_FALLBACK_DISABLED.formatted(primaryModel.getDisplayName()),
@@ -198,7 +202,7 @@ public class AIService {
             String cleanResponse = cleanJsonResponse(response);
 
             // Validate JSON is not empty or incomplete
-            if (StringUtils.isBlank(cleanResponse) || BooleanUtils.isFalse(cleanResponse.trim().endsWith("]"))) {
+            if (isBlank(cleanResponse) || isFalse(cleanResponse.trim().endsWith("]"))) {
                 log.error("AI response appears to be incomplete or empty. Response length: {}, ends with ]: {}",
                     cleanResponse.length(), cleanResponse.trim().endsWith("]"));
                 throw new ServiceException(
@@ -290,13 +294,13 @@ public class AIService {
 
             // Parse front content
             Map<String, Object> frontMap = (Map<String, Object>) flashcardMap.get(JSON_FIELD_FRONT);
-            if (Objects.nonNull(frontMap)) {
+            if (nonNull(frontMap)) {
                 builder.front(parseCardContent(frontMap));
             }
 
             // Parse back content
             Map<String, Object> backMap = (Map<String, Object>) flashcardMap.get(JSON_FIELD_BACK);
-            if (Objects.nonNull(backMap)) {
+            if (nonNull(backMap)) {
                 builder.back(parseCardContent(backMap));
             }
 
@@ -340,7 +344,7 @@ public class AIService {
             List<Map<String, Object>> codeBlockMaps = (List<Map<String, Object>>) contentMap.get(JSON_FIELD_CODE_BLOCKS);
             List<FlashcardDto.CodeBlockDto> codeBlocks = codeBlockMaps.stream()
                     .map(this::parseCodeBlock)
-                    .filter(Objects::nonNull)
+                    .filter(java.util.Objects::nonNull)
                     .toList();
             builder.codeBlocks(codeBlocks);
         }
@@ -365,7 +369,7 @@ public class AIService {
             }
 
             if (codeBlockMap.containsKey(JSON_FIELD_HIGHLIGHTED)) {
-                builder.highlighted(BooleanUtils.isTrue((Boolean) codeBlockMap.get(JSON_FIELD_HIGHLIGHTED)));
+                builder.highlighted(isTrue((Boolean) codeBlockMap.get(JSON_FIELD_HIGHLIGHTED)));
             }
 
             return builder.build();
@@ -376,7 +380,7 @@ public class AIService {
     }
 
     private Flashcard.DifficultyLevel parseDifficulty(String difficultyStr) {
-        if (StringUtils.isBlank(difficultyStr)) {
+        if (isBlank(difficultyStr)) {
             return Flashcard.DifficultyLevel.NOT_SET;
         }
 
@@ -389,7 +393,7 @@ public class AIService {
     }
 
     private Flashcard.ContentType parseContentType(String typeStr) {
-        if (StringUtils.isBlank(typeStr)) {
+        if (isBlank(typeStr)) {
             return Flashcard.ContentType.TEXT_ONLY;
         }
 
@@ -402,7 +406,7 @@ public class AIService {
     }
 
     private void validateGenerationRequest(AIGenerateRequestDto request) {
-        Objects.requireNonNull(request, AI_REQUEST_NULL);
+        requireNonNull(request, AI_REQUEST_NULL);
 
         // Additional business logic validation beyond annotations
         if (request.getText().length() > aiProperties.getLimits().getMaxTextLength()) {
@@ -436,7 +440,7 @@ public class AIService {
 
     private ErrorCode determineErrorCode(Exception e) {
         String message = e.getMessage();
-        if (Objects.isNull(message)) {
+        if (isNull(message)) {
             return ErrorCode.SERVICE_AI_GENERATION_ERROR;
         }
 

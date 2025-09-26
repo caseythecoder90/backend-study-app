@@ -16,7 +16,6 @@ import dev.samstevens.totp.secret.SecretGenerator;
 import dev.samstevens.totp.time.SystemTimeProvider;
 import dev.samstevens.totp.time.TimeProvider;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.BooleanUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -27,6 +26,7 @@ import static com.flashcards.backend.flashcards.constants.ErrorMessages.AUTH_TOT
 import static com.flashcards.backend.flashcards.constants.ErrorMessages.AUTH_TOTP_QR_GENERATION_FAILED;
 import static com.flashcards.backend.flashcards.constants.ErrorMessages.AUTH_TOTP_SECRET_USERNAME_NULL;
 import static com.flashcards.backend.flashcards.constants.ErrorMessages.AUTH_TOTP_VERIFICATION_FAILED;
+import static org.apache.commons.lang3.BooleanUtils.isFalse;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 @Slf4j
@@ -93,7 +93,7 @@ public class TotpService {
     }
 
     public void validateTotpCode(String secret, String code) {
-        if (BooleanUtils.isFalse(verifyCode(secret, code))) {
+        if (isFalse(verifyCode(secret, code))) {
             throw new ServiceException(AUTH_TOTP_CODE_INVALID, ErrorCode.AUTH_TOTP_INVALID);
         }
     }

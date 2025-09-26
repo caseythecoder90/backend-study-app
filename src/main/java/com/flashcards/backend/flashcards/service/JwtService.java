@@ -9,7 +9,6 @@ import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.BooleanUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -17,12 +16,10 @@ import javax.crypto.SecretKey;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static com.flashcards.backend.flashcards.constants.AuthConstants.BCRYPT_PREFIX_2A;
-import static com.flashcards.backend.flashcards.constants.AuthConstants.BCRYPT_PREFIX_2B;
-import static com.flashcards.backend.flashcards.constants.AuthConstants.BCRYPT_PREFIX_2Y;
 import static com.flashcards.backend.flashcards.constants.ErrorMessages.AUTH_TOKEN_EXTRACTION_FAILED;
 import static com.flashcards.backend.flashcards.constants.ErrorMessages.AUTH_TOKEN_INVALID;
 import static com.flashcards.backend.flashcards.constants.ErrorMessages.AUTH_USER_ID_NULL;
@@ -31,10 +28,8 @@ import static com.flashcards.backend.flashcards.constants.JwtConstants.JWT_CLAIM
 import static com.flashcards.backend.flashcards.constants.JwtConstants.JWT_CLAIM_EMAIL;
 import static com.flashcards.backend.flashcards.constants.JwtConstants.JWT_CLAIM_TOTP_ENABLED;
 import static com.flashcards.backend.flashcards.constants.JwtConstants.JWT_CLAIM_USERNAME;
-import static com.flashcards.backend.flashcards.constants.JwtConstants.JWT_DEFAULT_EXPIRATION_MS;
-import static com.flashcards.backend.flashcards.constants.JwtConstants.JWT_DEFAULT_ISSUER;
-import static com.flashcards.backend.flashcards.constants.JwtConstants.JWT_DEFAULT_SECRET;
 import static java.util.Objects.nonNull;
+import static org.apache.commons.lang3.BooleanUtils.isFalse;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 @Slf4j
@@ -45,9 +40,9 @@ public class JwtService {
     private final String jwtIssuer;
 
     public JwtService(
-            @Value("${jwt.secret:" + JWT_DEFAULT_SECRET + "}") String secret,
-            @Value("${jwt.expiration-ms:" + JWT_DEFAULT_EXPIRATION_MS + "}") long jwtExpirationMs,
-            @Value("${jwt.issuer:" + JWT_DEFAULT_ISSUER + "}") String jwtIssuer) {
+            @Value("${jwt.secret}") String secret,
+            @Value("${jwt.expiration}") long jwtExpirationMs,
+            @Value("${jwt.issuer}") String jwtIssuer) {
         this.secretKey = Keys.hmacShaKeyFor(secret.getBytes());
         this.jwtExpirationMs = jwtExpirationMs;
         this.jwtIssuer = jwtIssuer;
@@ -95,10 +90,16 @@ public class JwtService {
         return extractClaims(token).get(JWT_CLAIM_EMAIL, String.class);
     }
 
+    @SuppressWarnings("unchecked")
+    public List<String> extractAuthorities(String token) {
+        Claims claims = extractClaims(token);
+        return claims.get(JWT_CLAIM_AUTHORITIES, List.class);
+    }
+
     public boolean isTokenValid(String token) {
         try {
             Claims claims = extractClaims(token);
-            boolean isValid = BooleanUtils.isFalse(isTokenExpired(claims));
+            boolean isValid = isFalse(isTokenExpired(claims));
             log.debug("Token validation result: {}", isValid);
             return isValid;
         } catch (JwtException | IllegalArgumentException e) {

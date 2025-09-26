@@ -11,9 +11,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.BooleanUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Value;
+                                                                                                                   import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.security.oauth2.core.user.OAuth2User;
@@ -34,7 +32,9 @@ import static com.flashcards.backend.flashcards.constants.AuthConstants.OAUTH_PA
 import static com.flashcards.backend.flashcards.constants.AuthConstants.OAUTH_TYPE_VALUE;
 import static com.flashcards.backend.flashcards.constants.AuthConstants.OAUTH_USERNAME_FALLBACK_PREFIX;
 import static com.flashcards.backend.flashcards.constants.ErrorMessages.AUTH_OAUTH_EMAIL_NOT_FOUND;
-import static org.apache.logging.log4j.util.Strings.isNotBlank;
+import static org.apache.commons.lang3.BooleanUtils.isTrue;
+import static org.apache.commons.lang3.StringUtils.isBlank;
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 @Slf4j
 @Component
@@ -82,7 +82,7 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
 
         OAuth2UserInfo userInfo = OAuth2UserInfoFactory.getOAuth2UserInfo(registrationId, attributes);
 
-        if (StringUtils.isBlank(userInfo.getEmail())) {
+        if (isBlank(userInfo.getEmail())) {
             throw new ServiceException(AUTH_OAUTH_EMAIL_NOT_FOUND, ErrorCode.SERVICE_VALIDATION_ERROR);
         }
 
@@ -163,7 +163,7 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
         String username = baseUsername;
         int counter = 1;
 
-        while (BooleanUtils.isTrue(userDao.existsByUsername(username))) {
+        while (isTrue(userDao.existsByUsername(username))) {
             username = baseUsername + counter;
             counter++;
         }

@@ -1,5 +1,6 @@
 package com.flashcards.backend.flashcards.dao;
 
+import com.flashcards.backend.flashcards.model.Role;
 import com.flashcards.backend.flashcards.model.User;
 
 import java.util.List;
@@ -10,6 +11,7 @@ public interface UserDao {
     Optional<User> findByUsername(String username);
     Optional<User> findByEmail(String email);
     List<User> findAll();
+    List<User> findByRole(Role role);
     User save(User user);
     User update(User user);
     void deleteById(String id);
@@ -17,4 +19,5 @@ public interface UserDao {
     boolean existsByEmail(String email);
     Optional<User> findByOauthProviderAndOauthId(String oauthProvider, String oauthId);
     long count();
+    long countByRole(Role role);
 }

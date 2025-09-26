@@ -12,15 +12,12 @@ import com.flashcards.backend.flashcards.mapper.FlashcardMapper;
 import com.flashcards.backend.flashcards.model.Flashcard;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Supplier;
 
@@ -29,6 +26,10 @@ import static com.flashcards.backend.flashcards.constants.ErrorMessages.ENTITY_F
 import static com.flashcards.backend.flashcards.constants.ErrorMessages.SERVICE_ENTITY_NOT_FOUND;
 import static com.flashcards.backend.flashcards.constants.ErrorMessages.SERVICE_OPERATION_FAILED;
 import static com.flashcards.backend.flashcards.constants.ErrorMessages.SERVICE_VALIDATION_FAILED;
+import static java.util.Objects.isNull;
+import static java.util.Objects.requireNonNull;
+import static org.apache.commons.collections4.CollectionUtils.isEmpty;
+import static org.apache.commons.lang3.StringUtils.isBlank;
 
 @Slf4j
 @Service
@@ -69,7 +70,7 @@ public class FlashcardService {
     public List<FlashcardDto> findByDeckIdAndDifficulty(String deckId, Flashcard.DifficultyLevel difficulty) {
         return executeWithExceptionHandling(() -> {
             validateId(deckId);
-            Objects.requireNonNull(difficulty, "Difficulty level cannot be null");
+            requireNonNull(difficulty, "Difficulty level cannot be null");
             return flashcardMapper.toDtoList(flashcardDao.findByDeckIdAndDifficulty(deckId, difficulty));
         }, () -> SERVICE_OPERATION_FAILED.formatted("find by deck and difficulty", ENTITY_FLASHCARD));
     }
@@ -105,7 +106,7 @@ public class FlashcardService {
 
     public List<FlashcardDto> createMultipleFlashcards(List<CreateFlashcardDto> createFlashcardDtos) {
         return executeWithExceptionHandling(() -> {
-            if (CollectionUtils.isEmpty(createFlashcardDtos)) {
+            if (isEmpty(createFlashcardDtos)) {
                 return Collections.emptyList();
             }
 
@@ -222,7 +223,7 @@ public class FlashcardService {
             // Generate flashcards using AI service
             List<CreateFlashcardDto> generatedFlashcards = aiService.generateFlashcardsFromText(request);
 
-            if (CollectionUtils.isEmpty(generatedFlashcards)) {
+            if (isEmpty(generatedFlashcards)) {
                 log.warn("AI service returned no flashcards for request: {}", request);
                 return Collections.emptyList();
             }
@@ -233,7 +234,7 @@ public class FlashcardService {
     }
 
     private void validateId(String id) {
-        if (StringUtils.isBlank(id)) {
+        if (isBlank(id)) {
             throw new ServiceException(
                     SERVICE_VALIDATION_FAILED.formatted(ENTITY_FLASHCARD, "ID cannot be blank"),
                     ErrorCode.SERVICE_VALIDATION_ERROR
@@ -242,7 +243,7 @@ public class FlashcardService {
     }
 
     private void validateTag(String tag) {
-        if (StringUtils.isBlank(tag)) {
+        if (isBlank(tag)) {
             throw new ServiceException(
                     SERVICE_VALIDATION_FAILED.formatted(ENTITY_FLASHCARD, "Tag cannot be blank"),
                     ErrorCode.SERVICE_VALIDATION_ERROR
@@ -251,32 +252,32 @@ public class FlashcardService {
     }
 
     private void validateCreateFlashcardDto(CreateFlashcardDto createFlashcardDto) {
-        Objects.requireNonNull(createFlashcardDto, ENTITY_FLASHCARD + " creation data cannot be null");
+        requireNonNull(createFlashcardDto, ENTITY_FLASHCARD + " creation data cannot be null");
 
-        if (StringUtils.isBlank(createFlashcardDto.getDeckId())) {
+        if (isBlank(createFlashcardDto.getDeckId())) {
             throw new ServiceException(
                     SERVICE_VALIDATION_FAILED.formatted(ENTITY_FLASHCARD, "Deck ID is required"),
                     ErrorCode.SERVICE_VALIDATION_ERROR
             );
         }
 
-        if (StringUtils.isBlank(createFlashcardDto.getUserId())) {
+        if (isBlank(createFlashcardDto.getUserId())) {
             throw new ServiceException(
                     SERVICE_VALIDATION_FAILED.formatted(ENTITY_FLASHCARD, "User ID is required"),
                     ErrorCode.SERVICE_VALIDATION_ERROR
             );
         }
 
-        if (Objects.isNull(createFlashcardDto.getFront()) ||
-            StringUtils.isBlank(createFlashcardDto.getFront().getText())) {
+        if (isNull(createFlashcardDto.getFront()) ||
+            isBlank(createFlashcardDto.getFront().getText())) {
             throw new ServiceException(
                     SERVICE_VALIDATION_FAILED.formatted(ENTITY_FLASHCARD, "Front content is required"),
                     ErrorCode.SERVICE_VALIDATION_ERROR
             );
         }
 
-        if (Objects.isNull(createFlashcardDto.getBack()) ||
-            StringUtils.isBlank(createFlashcardDto.getBack().getText())) {
+        if (isNull(createFlashcardDto.getBack()) ||
+            isBlank(createFlashcardDto.getBack().getText())) {
             throw new ServiceException(
                     SERVICE_VALIDATION_FAILED.formatted(ENTITY_FLASHCARD, "Back content is required"),
                     ErrorCode.SERVICE_VALIDATION_ERROR
@@ -285,20 +286,20 @@ public class FlashcardService {
     }
 
     private void validateFlashcardDto(FlashcardDto flashcardDto) {
-        Objects.requireNonNull(flashcardDto, ENTITY_FLASHCARD + " data cannot be null");
+        requireNonNull(flashcardDto, ENTITY_FLASHCARD + " data cannot be null");
     }
 
     private void validateAIGenerateRequest(AIGenerateRequestDto request) {
-        Objects.requireNonNull(request, "AI generate request cannot be null");
+        requireNonNull(request, "AI generate request cannot be null");
 
-        if (StringUtils.isBlank(request.getDeckId())) {
+        if (isBlank(request.getDeckId())) {
             throw new ServiceException(
                     SERVICE_VALIDATION_FAILED.formatted("AI request", "Deck ID is required"),
                     ErrorCode.SERVICE_VALIDATION_ERROR
             );
         }
 
-        if (StringUtils.isBlank(request.getText())) {
+        if (isBlank(request.getText())) {
             throw new ServiceException(
                     SERVICE_VALIDATION_FAILED.formatted("AI request", "Text content is required"),
                     ErrorCode.SERVICE_VALIDATION_ERROR

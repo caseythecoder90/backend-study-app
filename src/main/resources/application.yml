@@ -37,6 +37,8 @@ spring:
   ai:
     openai:
       api-key: ${OPENAI_API_KEY}
+      connection-timeout: 60s
+      read-timeout: 60s
       chat:
         options:
           model: ${OPENAI_MODEL:gpt-4o-mini}
@@ -45,6 +47,8 @@ spring:
 
     anthropic:
       api-key: ${ANTHROPIC_API_KEY}
+      connection-timeout: 60s
+      read-timeout: 60s
       chat:
         options:
           model: ${ANTHROPIC_MODEL:claude-3-sonnet-20240229}
@@ -56,9 +60,14 @@ spring:
         gemini:
           project-id: ${VERTEX_AI_PROJECT_ID}
           location: ${VERTEX_AI_LOCATION:us-central1}
+          credentials-uri: ${VERTEX_AI_CREDENTIALS_URI:classpath:study-app-472920-1182c7a4b7dd.json}
+          transport: rest
+          connection-timeout: 60s
+          read-timeout: 60s
+          write-timeout: 60s
           chat:
             options:
-              model: ${VERTEX_AI_MODEL:gemini-pro}
+              model: ${VERTEX_AI_MODEL:gemini-2.0-flash}
               temperature: ${VERTEX_AI_TEMPERATURE:0.7}
               max-output-tokens: ${VERTEX_AI_MAX_TOKENS:2000}
 
@@ -95,6 +104,7 @@ openapi:
 jwt:
   secret: ${JWT_SECRET}
   expiration: ${JWT_EXPIRATION:86400000}  # 24 hours in milliseconds
+  issuer: ${JWT_ISSUER:flashcards-app}
 
 app:
   name: ${APP_NAME:Flashcards}
@@ -113,6 +123,13 @@ jasypt:
     salt-generator-class-name: org.jasypt.salt.RandomSaltGenerator
     iv-generator-class-name: org.jasypt.iv.RandomIvGenerator
     string-output-type: base64
+
+admin:
+  email: ${ADMIN_EMAIL}
+  username: ${ADMIN_USERNAME}
+  password: ${ADMIN_PASSWORD}
+  first-name: ${ADMIN_FIRST_NAME}
+  last-name: ${ADMIN_LAST_NAME}
 
 ai:
   limits:

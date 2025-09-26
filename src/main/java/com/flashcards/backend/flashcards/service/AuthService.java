@@ -15,7 +15,6 @@ import com.flashcards.backend.flashcards.model.Role;
 import com.flashcards.backend.flashcards.model.User;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.BooleanUtils;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -41,7 +40,9 @@ import static com.flashcards.backend.flashcards.constants.ErrorMessages.SERVICE_
 import static com.flashcards.backend.flashcards.constants.JwtConstants.JWT_TOKEN_TYPE;
 import static java.util.Objects.nonNull;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
-import static org.apache.logging.log4j.util.Strings.isBlank;
+import static org.apache.commons.lang3.BooleanUtils.isFalse;
+import static org.apache.commons.lang3.BooleanUtils.isTrue;
+import static org.apache.commons.lang3.StringUtils.isBlank;
 
 @Slf4j
 @Service
@@ -76,8 +77,8 @@ public class AuthService {
         validateUserCredentials(user, loginDto);
         validateUserAccount(user);
 
-        if (BooleanUtils.isTrue(user.isTotpEnabled())) {
-            if (BooleanUtils.isTrue(isBlank(loginDto.getTotpCode()))) {
+        if (isTrue(user.isTotpEnabled())) {
+            if (isTrue(isBlank(loginDto.getTotpCode()))) {
                 throw new ServiceException(AUTH_TOTP_CODE_REQUIRED, ErrorCode.AUTH_TOTP_REQUIRED);
             }
             validateTotpCode(user, loginDto.getTotpCode());
@@ -91,13 +92,13 @@ public class AuthService {
         return buildAuthResponse(accessToken, userDto, user.isTotpEnabled());
     }
     private void validateUserDoesNotExist(CreateUserDto createUserDto) {
-        if (BooleanUtils.isTrue(userDao.existsByUsername(createUserDto.getUsername()))) {
+        if (isTrue(userDao.existsByUsername(createUserDto.getUsername()))) {
             throw new ServiceException(
                     SERVICE_DUPLICATE_EXISTS.formatted("User", "username", createUserDto.getUsername()),
                     ErrorCode.SERVICE_DUPLICATE_ERROR
             );
         }
-        if (BooleanUtils.isTrue(userDao.existsByEmail(createUserDto.getEmail()))) {
+        if (isTrue(userDao.existsByEmail(createUserDto.getEmail()))) {
             throw new ServiceException(
                     SERVICE_DUPLICATE_EXISTS.formatted("User", "email", createUserDto.getEmail()),
                     ErrorCode.SERVICE_DUPLICATE_ERROR
@@ -139,13 +140,13 @@ public class AuthService {
     }
 
     private void validateUserCredentials(User user, LoginDto loginDto) {
-        if (BooleanUtils.isFalse(passwordService.verifyPassword(loginDto.getPassword(), user.getPassword()))) {
+        if (isFalse(passwordService.verifyPassword(loginDto.getPassword(), user.getPassword()))) {
             throw new ServiceException(AUTH_CREDENTIALS_INVALID, ErrorCode.AUTH_INVALID_CREDENTIALS);
         }
     }
 
     private void validateUserAccount(User user) {
-        if (BooleanUtils.isFalse(user.isEnabled())) {
+        if (isFalse(user.isEnabled())) {
             throw new ServiceException(AUTH_USER_DISABLED, ErrorCode.AUTH_USER_DISABLED);
         }
     }
@@ -171,7 +172,7 @@ public class AuthService {
         User user = userDao.findById(userId)
                 .orElseThrow(() -> new ServiceException(AUTH_CREDENTIALS_INVALID, ErrorCode.AUTH_INVALID_CREDENTIALS));
 
-        if (BooleanUtils.isTrue(user.isTotpEnabled())) {
+        if (isTrue(user.isTotpEnabled())) {
             throw new ServiceException(
                     TOTP_ALREADY_ENABLED,
                     ErrorCode.SERVICE_DUPLICATE_ERROR
@@ -209,14 +210,14 @@ public class AuthService {
         User user = userDao.findById(userId)
                 .orElseThrow(() -> new ServiceException(AUTH_CREDENTIALS_INVALID, ErrorCode.AUTH_INVALID_CREDENTIALS));
 
-        if (BooleanUtils.isTrue(user.isTotpEnabled())) {
+        if (isTrue(user.isTotpEnabled())) {
             throw new ServiceException(
                     TOTP_ALREADY_ENABLED,
                     ErrorCode.SERVICE_DUPLICATE_ERROR
             );
         }
 
-        if (BooleanUtils.isTrue(isBlank(user.getTotpSecret()))) {
+        if (isTrue(isBlank(user.getTotpSecret()))) {
             throw new ServiceException(
                     TOTP_SETUP_REQUIRED,
                     ErrorCode.SERVICE_VALIDATION_ERROR
@@ -242,7 +243,7 @@ public class AuthService {
         User user = userDao.findById(userId)
                 .orElseThrow(() -> new ServiceException(AUTH_CREDENTIALS_INVALID, ErrorCode.AUTH_INVALID_CREDENTIALS));
 
-        if (BooleanUtils.isFalse(user.isTotpEnabled())) {
+        if (isFalse(user.isTotpEnabled())) {
             throw new ServiceException(
                     TOTP_NOT_ENABLED,
                     ErrorCode.SERVICE_NOT_FOUND
@@ -271,7 +272,7 @@ public class AuthService {
         validateUserCredentials(user, convertToLoginDto(recoveryCodeLoginDto));
         validateUserAccount(user);
 
-        if (BooleanUtils.isFalse(user.isTotpEnabled())) {
+        if (isFalse(user.isTotpEnabled())) {
             throw new ServiceException(AUTH_RECOVERY_CODES_NOT_ENABLED, ErrorCode.AUTH_RECOVERY_CODES_NOT_ENABLED);
         }
 
@@ -279,7 +280,7 @@ public class AuthService {
             throw new ServiceException(AUTH_RECOVERY_CODES_EXHAUSTED, ErrorCode.AUTH_RECOVERY_CODES_EXHAUSTED);
         }
 
-        if (BooleanUtils.isFalse(recoveryCodeService.validateRecoveryCode(
+        if (isFalse(recoveryCodeService.validateRecoveryCode(
                 recoveryCodeLoginDto.getRecoveryCode(), user.getRecoveryCodeHashes()))) {
             throw new ServiceException(AUTH_RECOVERY_CODE_INVALID, ErrorCode.AUTH_RECOVERY_CODE_INVALID);
         }
@@ -305,7 +306,7 @@ public class AuthService {
         User user = userDao.findById(userId)
                 .orElseThrow(() -> new ServiceException(AUTH_CREDENTIALS_INVALID, ErrorCode.AUTH_INVALID_CREDENTIALS));
 
-        if (BooleanUtils.isFalse(user.isTotpEnabled())) {
+        if (isFalse(user.isTotpEnabled())) {
             throw new ServiceException(AUTH_RECOVERY_CODES_NOT_ENABLED, ErrorCode.AUTH_RECOVERY_CODES_NOT_ENABLED);
         }
 
@@ -337,7 +338,7 @@ public class AuthService {
         User user = userDao.findById(userId)
                 .orElseThrow(() -> new ServiceException(AUTH_CREDENTIALS_INVALID, ErrorCode.AUTH_INVALID_CREDENTIALS));
 
-        if (BooleanUtils.isFalse(user.isTotpEnabled())) {
+        if (isFalse(user.isTotpEnabled())) {
             throw new ServiceException(AUTH_RECOVERY_CODES_NOT_ENABLED, ErrorCode.AUTH_RECOVERY_CODES_NOT_ENABLED);
         }
 

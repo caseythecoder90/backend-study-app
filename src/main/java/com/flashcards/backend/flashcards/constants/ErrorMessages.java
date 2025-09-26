@@ -132,6 +132,10 @@ public class ErrorMessages {
     public static final String CONFIG_PROVIDER_INVALID = "Invalid AI provider configuration for %s";
     public static final String CONFIG_PROVIDER_UNAVAILABLE = "AI provider %s is not available";
 
+    // Data Initialization Error Messages
+    public static final String INIT_ADMIN_CREATION_FAILED = "Failed to initialize admin user";
+    public static final String INIT_ADMIN_UPGRADE_FAILED = "Failed to upgrade user %s to admin role";
+
     private ErrorMessages() {
         // Private constructor to prevent instantiation
     }

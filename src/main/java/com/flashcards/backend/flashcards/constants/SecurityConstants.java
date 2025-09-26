@@ -16,6 +16,14 @@ public class SecurityConstants {
             "/api/auth/recovery-codes/**"
     };
 
+    // Admin Only Endpoints (ADMIN role required)
+    public static final String[] ADMIN_ONLY_ENDPOINTS = {
+            "/api/users/**",           // All user management endpoints
+            "/api/admin/**",           // Dedicated admin endpoints
+            "/api/decks/admin/**",     // Admin deck operations
+            "/api/flashcards/admin/**" // Admin flashcard operations
+    };
+
     // Swagger/OpenAPI Endpoints
     public static final String[] SWAGGER_ENDPOINTS = {
             "/swagger-ui/**",

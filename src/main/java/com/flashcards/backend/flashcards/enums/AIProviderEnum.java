@@ -4,9 +4,9 @@ import com.flashcards.backend.flashcards.exception.ServiceException;
 import com.flashcards.backend.flashcards.exception.ErrorCode;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import org.apache.commons.lang3.StringUtils;
 
 import static com.flashcards.backend.flashcards.constants.ErrorMessages.AI_PROVIDER_UNKNOWN;
+import static org.apache.commons.lang3.StringUtils.isBlank;
 
 @Getter
 @RequiredArgsConstructor
@@ -20,7 +20,7 @@ public enum AIProviderEnum {
     private final boolean available;
 
     public static AIProviderEnum fromCode(String code) {
-        if (StringUtils.isBlank(code)) {
+        if (isBlank(code)) {
             throw new ServiceException(
                 AI_PROVIDER_UNKNOWN.formatted("null or empty"),
                 ErrorCode.SERVICE_AI_PROVIDER_UNKNOWN

@@ -4,18 +4,20 @@ import com.flashcards.backend.flashcards.enums.AIModelEnum;
 import com.flashcards.backend.flashcards.enums.AIProviderEnum;
 import com.flashcards.backend.flashcards.exception.ServiceException;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.BooleanUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
-import java.util.Objects;
 
 import static com.flashcards.backend.flashcards.constants.AIConstants.CHARS_PER_TOKEN_ESTIMATE;
 import static com.flashcards.backend.flashcards.constants.ErrorMessages.AI_PROVIDER_UNKNOWN;
 import static com.flashcards.backend.flashcards.exception.ErrorCode.SERVICE_AI_PROVIDER_UNKNOWN;
+import static java.util.Objects.isNull;
+import static java.util.Objects.nonNull;
+import static org.apache.commons.lang3.BooleanUtils.isFalse;
+import static org.apache.commons.lang3.BooleanUtils.isTrue;
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 @Service
 @Slf4j
@@ -28,13 +30,21 @@ public class ModelSelectorService {
     public ModelSelectorService(
             @Qualifier("openAiChatModel") @Autowired(required = false) ChatModel openAiChatModel,
             @Qualifier("anthropicChatModel") @Autowired(required = false) ChatModel anthropicChatModel,
-            @Qualifier("vertexAiGeminiChatModel") @Autowired(required = false) ChatModel vertexAiGeminiChatModel) {
+            @Qualifier("vertexAiGeminiChat") @Autowired(required = false) ChatModel vertexAiGeminiChatModel) {
         this.openAiChatModel = openAiChatModel;
         this.anthropicChatModel = anthropicChatModel;
         this.vertexAiGeminiChatModel = vertexAiGeminiChatModel;
 
-        log.info("ModelSelectorService initialized with providers: OpenAI={}, Anthropic={}, Vertex AI={}",
-            Objects.nonNull(openAiChatModel), Objects.nonNull(anthropicChatModel), Objects.nonNull(vertexAiGeminiChatModel));
+        log.info("ModelSelectorService initialized with providers:");
+        log.info("  - OpenAI: {} ({})",
+            nonNull(openAiChatModel) ? "AVAILABLE" : "NOT_AVAILABLE",
+            nonNull(openAiChatModel) ? openAiChatModel.getClass().getSimpleName() : "null");
+        log.info("  - Anthropic: {} ({})",
+            nonNull(anthropicChatModel) ? "AVAILABLE" : "NOT_AVAILABLE",
+            nonNull(anthropicChatModel) ? anthropicChatModel.getClass().getSimpleName() : "null");
+        log.info("  - Vertex AI: {} ({})",
+            nonNull(vertexAiGeminiChatModel) ? "AVAILABLE" : "NOT_AVAILABLE",
+            nonNull(vertexAiGeminiChatModel) ? vertexAiGeminiChatModel.getClass().getSimpleName() : "null");
     }
 
     /**
@@ -47,7 +57,7 @@ public class ModelSelectorService {
      */
     public ChatModel selectChatModel(AIModelEnum model) {
         // Default to GPT-4O-MINI if model is null
-        AIModelEnum selectedModel = Objects.nonNull(model) ? model : AIModelEnum.GPT_4O_MINI;
+        AIModelEnum selectedModel = nonNull(model) ? model : AIModelEnum.GPT_4O_MINI;
 
         validateModelForRequest(selectedModel);
 
@@ -69,7 +79,7 @@ public class ModelSelectorService {
                 }
             };
 
-            if (Objects.isNull(chatModel)) {
+            if (isNull(chatModel)) {
                 throw new ServiceException(
                     AI_PROVIDER_UNKNOWN.formatted("Provider " + provider.name() + " is not configured"),
                     SERVICE_AI_PROVIDER_UNKNOWN
@@ -98,7 +108,7 @@ public class ModelSelectorService {
      * @return true if the model is available, false otherwise
      */
     public boolean isModelAvailable(AIModelEnum model) {
-        if (Objects.isNull(model)) {
+        if (isNull(model)) {
             return false;
         }
 
@@ -109,7 +119,7 @@ public class ModelSelectorService {
                 case ANTHROPIC -> anthropicChatModel;
                 case GOOGLE -> vertexAiGeminiChatModel;
             };
-            return BooleanUtils.isTrue(Objects.nonNull(chatModel));
+            return isTrue(nonNull(chatModel));
         } catch (Exception e) {
             log.warn("Error checking model availability for {}: {}", model.getDisplayName(), e.getMessage());
             return false;
@@ -123,7 +133,7 @@ public class ModelSelectorService {
      * @throws ServiceException if the model is not available or suitable
      */
     public void validateModelForRequest(AIModelEnum model) {
-        if (BooleanUtils.isFalse(isModelAvailable(model))) {
+        if (isFalse(isModelAvailable(model))) {
             throw new ServiceException(
                 AI_PROVIDER_UNKNOWN.formatted("Model " + model.getDisplayName() + " is not available"),
                 SERVICE_AI_PROVIDER_UNKNOWN
@@ -141,7 +151,7 @@ public class ModelSelectorService {
     public void validateModelForText(AIModelEnum model, String text) {
         validateModelForRequest(model);
 
-        if (StringUtils.isNotBlank(text)) {
+        if (isNotBlank(text)) {
             int estimatedTokens = text.length() / CHARS_PER_TOKEN_ESTIMATE;
             if (estimatedTokens > model.getMaxContextTokens()) {
                 throw new ServiceException(

@@ -2,8 +2,6 @@ package com.flashcards.backend.flashcards.enums;
 
 import com.flashcards.backend.flashcards.exception.ServiceException;
 import lombok.Getter;
-import org.apache.commons.lang3.StringUtils;
-
 import java.util.Arrays;
 import java.util.Objects;
 
@@ -13,12 +11,15 @@ import static com.flashcards.backend.flashcards.constants.AIConstants.CONTEXT_TO
 import static com.flashcards.backend.flashcards.constants.AIConstants.CONTEXT_TOKENS_CLAUDE_3_SONNET;
 import static com.flashcards.backend.flashcards.constants.AIConstants.CONTEXT_TOKENS_GEMINI_15_FLASH;
 import static com.flashcards.backend.flashcards.constants.AIConstants.CONTEXT_TOKENS_GEMINI_15_PRO;
+import static com.flashcards.backend.flashcards.constants.AIConstants.CONTEXT_TOKENS_GEMINI_20_FLASH;
+import static com.flashcards.backend.flashcards.constants.AIConstants.CONTEXT_TOKENS_GEMINI_25_FLASH;
 import static com.flashcards.backend.flashcards.constants.AIConstants.CONTEXT_TOKENS_GEMINI_PRO;
 import static com.flashcards.backend.flashcards.constants.AIConstants.CONTEXT_TOKENS_GEMINI_PRO_VISION;
 import static com.flashcards.backend.flashcards.constants.AIConstants.CONTEXT_TOKENS_CLAUDE_35_HAIKU;
 import static com.flashcards.backend.flashcards.constants.AIConstants.CONTEXT_TOKENS_CLAUDE_OPUS_4_1;
 import static com.flashcards.backend.flashcards.constants.AIConstants.CONTEXT_TOKENS_CLAUDE_SONNET_4;
 import static com.flashcards.backend.flashcards.constants.AIConstants.CONTEXT_TOKENS_GPT_35_TURBO;
+import static com.flashcards.backend.flashcards.constants.AIConstants.CONTEXT_TOKENS_GPT_5_NANO;
 import static com.flashcards.backend.flashcards.constants.AIConstants.CONTEXT_TOKENS_GPT_4;
 import static com.flashcards.backend.flashcards.constants.AIConstants.CONTEXT_TOKENS_GPT_4_1;
 import static com.flashcards.backend.flashcards.constants.AIConstants.CONTEXT_TOKENS_GPT_4O;
@@ -31,9 +32,12 @@ import static com.flashcards.backend.flashcards.constants.AIConstants.DISPLAY_CL
 import static com.flashcards.backend.flashcards.constants.AIConstants.DISPLAY_CLAUDE_3_SONNET;
 import static com.flashcards.backend.flashcards.constants.AIConstants.DISPLAY_GEMINI_15_FLASH;
 import static com.flashcards.backend.flashcards.constants.AIConstants.DISPLAY_GEMINI_15_PRO;
+import static com.flashcards.backend.flashcards.constants.AIConstants.DISPLAY_GEMINI_20_FLASH;
+import static com.flashcards.backend.flashcards.constants.AIConstants.DISPLAY_GEMINI_25_FLASH;
 import static com.flashcards.backend.flashcards.constants.AIConstants.DISPLAY_GEMINI_PRO;
 import static com.flashcards.backend.flashcards.constants.AIConstants.DISPLAY_GEMINI_PRO_VISION;
 import static com.flashcards.backend.flashcards.constants.AIConstants.DISPLAY_GPT_35_TURBO;
+import static com.flashcards.backend.flashcards.constants.AIConstants.DISPLAY_GPT_5_NANO;
 import static com.flashcards.backend.flashcards.constants.AIConstants.DISPLAY_CLAUDE_35_HAIKU;
 import static com.flashcards.backend.flashcards.constants.AIConstants.DISPLAY_CLAUDE_OPUS_4_1;
 import static com.flashcards.backend.flashcards.constants.AIConstants.DISPLAY_CLAUDE_SONNET_4;
@@ -52,8 +56,11 @@ import static com.flashcards.backend.flashcards.constants.AIConstants.MODEL_CLAU
 import static com.flashcards.backend.flashcards.constants.AIConstants.MODEL_CLAUDE_SONNET_4_20250514;
 import static com.flashcards.backend.flashcards.constants.AIConstants.MODEL_GEMINI_15_FLASH;
 import static com.flashcards.backend.flashcards.constants.AIConstants.MODEL_GEMINI_15_PRO;
+import static com.flashcards.backend.flashcards.constants.AIConstants.MODEL_GEMINI_20_FLASH;
+import static com.flashcards.backend.flashcards.constants.AIConstants.MODEL_GEMINI_25_FLASH;
 import static com.flashcards.backend.flashcards.constants.AIConstants.MODEL_GEMINI_PRO;
 import static com.flashcards.backend.flashcards.constants.AIConstants.MODEL_GPT_35_TURBO;
+import static com.flashcards.backend.flashcards.constants.AIConstants.MODEL_GPT_5_NANO;
 import static com.flashcards.backend.flashcards.constants.AIConstants.MODEL_GPT_4;
 import static com.flashcards.backend.flashcards.constants.AIConstants.MODEL_GPT_4_1;
 import static com.flashcards.backend.flashcards.constants.AIConstants.MODEL_GPT_4O;
@@ -66,12 +73,15 @@ import static com.flashcards.backend.flashcards.constants.AIConstants.OUTPUT_TOK
 import static com.flashcards.backend.flashcards.constants.AIConstants.OUTPUT_TOKENS_CLAUDE_3_SONNET;
 import static com.flashcards.backend.flashcards.constants.AIConstants.OUTPUT_TOKENS_GEMINI_15_FLASH;
 import static com.flashcards.backend.flashcards.constants.AIConstants.OUTPUT_TOKENS_GEMINI_15_PRO;
+import static com.flashcards.backend.flashcards.constants.AIConstants.OUTPUT_TOKENS_GEMINI_20_FLASH;
+import static com.flashcards.backend.flashcards.constants.AIConstants.OUTPUT_TOKENS_GEMINI_25_FLASH;
 import static com.flashcards.backend.flashcards.constants.AIConstants.OUTPUT_TOKENS_GEMINI_PRO;
 import static com.flashcards.backend.flashcards.constants.AIConstants.OUTPUT_TOKENS_GEMINI_PRO_VISION;
 import static com.flashcards.backend.flashcards.constants.AIConstants.OUTPUT_TOKENS_CLAUDE_35_HAIKU;
 import static com.flashcards.backend.flashcards.constants.AIConstants.OUTPUT_TOKENS_CLAUDE_OPUS_4_1;
 import static com.flashcards.backend.flashcards.constants.AIConstants.OUTPUT_TOKENS_CLAUDE_SONNET_4;
 import static com.flashcards.backend.flashcards.constants.AIConstants.OUTPUT_TOKENS_GPT_35_TURBO;
+import static com.flashcards.backend.flashcards.constants.AIConstants.OUTPUT_TOKENS_GPT_5_NANO;
 import static com.flashcards.backend.flashcards.constants.AIConstants.OUTPUT_TOKENS_GPT_4;
 import static com.flashcards.backend.flashcards.constants.AIConstants.OUTPUT_TOKENS_GPT_4_1;
 import static com.flashcards.backend.flashcards.constants.AIConstants.OUTPUT_TOKENS_GPT_4O;
@@ -84,12 +94,15 @@ import static com.flashcards.backend.flashcards.constants.AIConstants.SUPPORTS_V
 import static com.flashcards.backend.flashcards.constants.AIConstants.SUPPORTS_VISION_CLAUDE_3_SONNET;
 import static com.flashcards.backend.flashcards.constants.AIConstants.SUPPORTS_VISION_GEMINI_15_FLASH;
 import static com.flashcards.backend.flashcards.constants.AIConstants.SUPPORTS_VISION_GEMINI_15_PRO;
+import static com.flashcards.backend.flashcards.constants.AIConstants.SUPPORTS_VISION_GEMINI_20_FLASH;
+import static com.flashcards.backend.flashcards.constants.AIConstants.SUPPORTS_VISION_GEMINI_25_FLASH;
 import static com.flashcards.backend.flashcards.constants.AIConstants.SUPPORTS_VISION_GEMINI_PRO;
 import static com.flashcards.backend.flashcards.constants.AIConstants.SUPPORTS_VISION_GEMINI_PRO_VISION;
 import static com.flashcards.backend.flashcards.constants.AIConstants.SUPPORTS_VISION_CLAUDE_35_HAIKU;
 import static com.flashcards.backend.flashcards.constants.AIConstants.SUPPORTS_VISION_CLAUDE_OPUS_4_1;
 import static com.flashcards.backend.flashcards.constants.AIConstants.SUPPORTS_VISION_CLAUDE_SONNET_4;
 import static com.flashcards.backend.flashcards.constants.AIConstants.SUPPORTS_VISION_GPT_35_TURBO;
+import static com.flashcards.backend.flashcards.constants.AIConstants.SUPPORTS_VISION_GPT_5_NANO;
 import static com.flashcards.backend.flashcards.constants.AIConstants.SUPPORTS_VISION_GPT_4;
 import static com.flashcards.backend.flashcards.constants.AIConstants.SUPPORTS_VISION_GPT_4_1;
 import static com.flashcards.backend.flashcards.constants.AIConstants.SUPPORTS_VISION_GPT_4O;
@@ -98,6 +111,9 @@ import static com.flashcards.backend.flashcards.constants.AIConstants.SUPPORTS_V
 import static com.flashcards.backend.flashcards.constants.AIConstants.SUPPORTS_VISION_O1_PREVIEW;
 import static com.flashcards.backend.flashcards.constants.ErrorMessages.AI_PROVIDER_UNKNOWN;
 import static com.flashcards.backend.flashcards.exception.ErrorCode.SERVICE_AI_PROVIDER_UNKNOWN;
+import static java.util.Objects.equals;
+import static java.util.Objects.isNull;
+import static org.apache.commons.lang3.StringUtils.isBlank;
 
 
 
@@ -111,6 +127,7 @@ public enum AIModelEnum {
     GPT_4(MODEL_GPT_4, AIProviderEnum.OPENAI, DISPLAY_GPT_4, SUPPORTS_VISION_GPT_4, CONTEXT_TOKENS_GPT_4, OUTPUT_TOKENS_GPT_4),
     O1_PREVIEW(MODEL_O1_PREVIEW, AIProviderEnum.OPENAI, DISPLAY_O1_PREVIEW, SUPPORTS_VISION_O1_PREVIEW, CONTEXT_TOKENS_O1_PREVIEW, OUTPUT_TOKENS_O1_PREVIEW),
     GPT_3_5_TURBO(MODEL_GPT_35_TURBO, AIProviderEnum.OPENAI, DISPLAY_GPT_35_TURBO, SUPPORTS_VISION_GPT_35_TURBO, CONTEXT_TOKENS_GPT_35_TURBO, OUTPUT_TOKENS_GPT_35_TURBO),
+    GPT_5_NANO(MODEL_GPT_5_NANO, AIProviderEnum.OPENAI, DISPLAY_GPT_5_NANO, SUPPORTS_VISION_GPT_5_NANO, CONTEXT_TOKENS_GPT_5_NANO, OUTPUT_TOKENS_GPT_5_NANO),
 
     // Anthropic Claude Models
     CLAUDE_SONNET_4(MODEL_CLAUDE_SONNET_4_20250514, AIProviderEnum.ANTHROPIC, DISPLAY_CLAUDE_SONNET_4, SUPPORTS_VISION_CLAUDE_SONNET_4, CONTEXT_TOKENS_CLAUDE_SONNET_4, OUTPUT_TOKENS_CLAUDE_SONNET_4),
@@ -125,7 +142,9 @@ public enum AIModelEnum {
     GEMINI_PRO(MODEL_GEMINI_PRO, AIProviderEnum.GOOGLE, DISPLAY_GEMINI_PRO, SUPPORTS_VISION_GEMINI_PRO, CONTEXT_TOKENS_GEMINI_PRO, OUTPUT_TOKENS_GEMINI_PRO),
     GEMINI_PRO_VISION("gemini-pro-vision", AIProviderEnum.GOOGLE, DISPLAY_GEMINI_PRO_VISION, SUPPORTS_VISION_GEMINI_PRO_VISION, CONTEXT_TOKENS_GEMINI_PRO_VISION, OUTPUT_TOKENS_GEMINI_PRO_VISION),
     GEMINI_1_5_PRO(MODEL_GEMINI_15_PRO, AIProviderEnum.GOOGLE, DISPLAY_GEMINI_15_PRO, SUPPORTS_VISION_GEMINI_15_PRO, CONTEXT_TOKENS_GEMINI_15_PRO, OUTPUT_TOKENS_GEMINI_15_PRO),
-    GEMINI_1_5_FLASH(MODEL_GEMINI_15_FLASH, AIProviderEnum.GOOGLE, DISPLAY_GEMINI_15_FLASH, SUPPORTS_VISION_GEMINI_15_FLASH, CONTEXT_TOKENS_GEMINI_15_FLASH, OUTPUT_TOKENS_GEMINI_15_FLASH);
+    GEMINI_1_5_FLASH(MODEL_GEMINI_15_FLASH, AIProviderEnum.GOOGLE, DISPLAY_GEMINI_15_FLASH, SUPPORTS_VISION_GEMINI_15_FLASH, CONTEXT_TOKENS_GEMINI_15_FLASH, OUTPUT_TOKENS_GEMINI_15_FLASH),
+    GEMINI_2_0_FLASH(MODEL_GEMINI_20_FLASH, AIProviderEnum.GOOGLE, DISPLAY_GEMINI_20_FLASH, SUPPORTS_VISION_GEMINI_20_FLASH, CONTEXT_TOKENS_GEMINI_20_FLASH, OUTPUT_TOKENS_GEMINI_20_FLASH),
+    GEMINI_2_5_FLASH(MODEL_GEMINI_25_FLASH, AIProviderEnum.GOOGLE, DISPLAY_GEMINI_25_FLASH, SUPPORTS_VISION_GEMINI_25_FLASH, CONTEXT_TOKENS_GEMINI_25_FLASH, OUTPUT_TOKENS_GEMINI_25_FLASH);
 
     private final String modelId;
     private final AIProviderEnum provider;
@@ -148,7 +167,7 @@ public enum AIModelEnum {
      * Find AIModelEnum by model ID string
      */
     public static AIModelEnum fromModelId(String modelId) {
-        if (StringUtils.isBlank(modelId)) {
+        if (isBlank(modelId)) {
             throw new ServiceException(
                 AI_PROVIDER_UNKNOWN.formatted("Model ID cannot be null or blank"),
                 SERVICE_AI_PROVIDER_UNKNOWN
@@ -168,7 +187,7 @@ public enum AIModelEnum {
      * Find AIModelEnum by enum name
      */
     public static AIModelEnum fromName(String name) {
-        if (StringUtils.isBlank(name)) {
+        if (isBlank(name)) {
             throw new ServiceException(
                 AI_PROVIDER_UNKNOWN.formatted("Model name cannot be null or blank"),
                 SERVICE_AI_PROVIDER_UNKNOWN
@@ -190,7 +209,7 @@ public enum AIModelEnum {
      * Get all models for a specific provider
      */
     public static AIModelEnum[] getModelsForProvider(AIProviderEnum provider) {
-        if (Objects.isNull(provider)) {
+        if (isNull(provider)) {
             return new AIModelEnum[0];
         }
 
@@ -206,7 +225,7 @@ public enum AIModelEnum {
         return switch (provider) {
             case OPENAI -> GPT_4O_MINI;
             case ANTHROPIC -> CLAUDE_SONNET_4;
-            case GOOGLE -> GEMINI_1_5_FLASH;
+            case GOOGLE -> GEMINI_2_0_FLASH;
         };
     }
 

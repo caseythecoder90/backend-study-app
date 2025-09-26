@@ -11,6 +11,7 @@ public class AIConstants {
     public static final String MODEL_GPT_4O_MINI = "gpt-4o-mini";
     public static final String MODEL_O1_PREVIEW = "o1-preview";
     public static final String MODEL_GPT_35_TURBO = "gpt-3.5-turbo";
+    public static final String MODEL_GPT_5_NANO = "gpt-5-nano";
 
     // Anthropic Claude Model Names
     public static final String MODEL_CLAUDE_SONNET_4_20250514 = "claude-sonnet-4-20250514";
@@ -28,6 +29,8 @@ public class AIConstants {
     public static final String MODEL_GEMINI_PRO = "gemini-pro";
     public static final String MODEL_GEMINI_15_PRO = "gemini-1.5-pro";
     public static final String MODEL_GEMINI_15_FLASH = "gemini-1.5-flash";
+    public static final String MODEL_GEMINI_20_FLASH = "gemini-2.0-flash";
+    public static final String MODEL_GEMINI_25_FLASH = "gemini-2.5-flash";
     public static final String MODEL_GEMINI_ULTRA = "gemini-ultra";
 
     // Default Models
@@ -86,6 +89,7 @@ public class AIConstants {
     public static final String DISPLAY_GPT_4 = "GPT-4";
     public static final String DISPLAY_O1_PREVIEW = "O1 Preview";
     public static final String DISPLAY_GPT_35_TURBO = "GPT-3.5 Turbo";
+    public static final String DISPLAY_GPT_5_NANO = "GPT-5 Nano";
     public static final String DISPLAY_CLAUDE_SONNET_4 = "Claude Sonnet 4";
     public static final String DISPLAY_CLAUDE_OPUS_4_1 = "Claude Opus 4.1";
     public static final String DISPLAY_CLAUDE_35_SONNET = "Claude 3.5 Sonnet";
@@ -97,6 +101,8 @@ public class AIConstants {
     public static final String DISPLAY_GEMINI_PRO_VISION = "Gemini Pro Vision";
     public static final String DISPLAY_GEMINI_15_PRO = "Gemini 1.5 Pro";
     public static final String DISPLAY_GEMINI_15_FLASH = "Gemini 1.5 Flash";
+    public static final String DISPLAY_GEMINI_20_FLASH = "Gemini 2.0 Flash";
+    public static final String DISPLAY_GEMINI_25_FLASH = "Gemini 2.5 Flash";
 
     // Model Capabilities - Context Tokens
     public static final int CONTEXT_TOKENS_GPT_4O = 128000;
@@ -106,6 +112,7 @@ public class AIConstants {
     public static final int CONTEXT_TOKENS_GPT_4 = 8192;
     public static final int CONTEXT_TOKENS_O1_PREVIEW = 128000;
     public static final int CONTEXT_TOKENS_GPT_35_TURBO = 16385;
+    public static final int CONTEXT_TOKENS_GPT_5_NANO = 400000;
     public static final int CONTEXT_TOKENS_CLAUDE_SONNET_4 = 200000;
     public static final int CONTEXT_TOKENS_CLAUDE_OPUS_4_1 = 200000;
     public static final int CONTEXT_TOKENS_CLAUDE_35_SONNET = 200000;
@@ -117,6 +124,8 @@ public class AIConstants {
     public static final int CONTEXT_TOKENS_GEMINI_PRO_VISION = 12288;
     public static final int CONTEXT_TOKENS_GEMINI_15_PRO = 1000000;
     public static final int CONTEXT_TOKENS_GEMINI_15_FLASH = 1000000;
+    public static final int CONTEXT_TOKENS_GEMINI_20_FLASH = 1000000;
+    public static final int CONTEXT_TOKENS_GEMINI_25_FLASH = 1000000;
 
     // Model Capabilities - Output Tokens
     public static final int OUTPUT_TOKENS_GPT_4O = 4096;
@@ -126,6 +135,7 @@ public class AIConstants {
     public static final int OUTPUT_TOKENS_GPT_4 = 4096;
     public static final int OUTPUT_TOKENS_O1_PREVIEW = 32768;
     public static final int OUTPUT_TOKENS_GPT_35_TURBO = 4096;
+    public static final int OUTPUT_TOKENS_GPT_5_NANO = 128000;
     public static final int OUTPUT_TOKENS_CLAUDE_SONNET_4 = 8192;
     public static final int OUTPUT_TOKENS_CLAUDE_OPUS_4_1 = 8192;
     public static final int OUTPUT_TOKENS_CLAUDE_35_SONNET = 8192;
@@ -137,6 +147,8 @@ public class AIConstants {
     public static final int OUTPUT_TOKENS_GEMINI_PRO_VISION = 4096;
     public static final int OUTPUT_TOKENS_GEMINI_15_PRO = 8192;
     public static final int OUTPUT_TOKENS_GEMINI_15_FLASH = 8192;
+    public static final int OUTPUT_TOKENS_GEMINI_20_FLASH = 8192;
+    public static final int OUTPUT_TOKENS_GEMINI_25_FLASH = 8192;
 
     // Vision Capabilities
     public static final boolean SUPPORTS_VISION_GPT_4O = true;
@@ -146,6 +158,7 @@ public class AIConstants {
     public static final boolean SUPPORTS_VISION_GPT_4 = false;
     public static final boolean SUPPORTS_VISION_O1_PREVIEW = false;
     public static final boolean SUPPORTS_VISION_GPT_35_TURBO = false;
+    public static final boolean SUPPORTS_VISION_GPT_5_NANO = true;
     public static final boolean SUPPORTS_VISION_CLAUDE_SONNET_4 = true;
     public static final boolean SUPPORTS_VISION_CLAUDE_OPUS_4_1 = true;
     public static final boolean SUPPORTS_VISION_CLAUDE_35_SONNET = true;
@@ -157,6 +170,8 @@ public class AIConstants {
     public static final boolean SUPPORTS_VISION_GEMINI_PRO_VISION = true;
     public static final boolean SUPPORTS_VISION_GEMINI_15_PRO = true;
     public static final boolean SUPPORTS_VISION_GEMINI_15_FLASH = true;
+    public static final boolean SUPPORTS_VISION_GEMINI_20_FLASH = true;
+    public static final boolean SUPPORTS_VISION_GEMINI_25_FLASH = true;
 
     // Cost Estimates (per 1K tokens)
     public static final double COST_GPT_4O = 0.005;
@@ -166,6 +181,7 @@ public class AIConstants {
     public static final double COST_GPT_4 = 0.03;
     public static final double COST_O1_PREVIEW = 0.015;
     public static final double COST_GPT_35_TURBO = 0.001;
+      public static final double COST_GPT_5_NANO = 0.00005;
     public static final double COST_CLAUDE_SONNET_4 = 0.003;
     public static final double COST_CLAUDE_OPUS_4_1 = 0.015;
     public static final double COST_CLAUDE_35_SONNET = 0.003;
@@ -177,6 +193,8 @@ public class AIConstants {
     public static final double COST_GEMINI_PRO_VISION = 0.001;
     public static final double COST_GEMINI_15_PRO = 0.0035;
     public static final double COST_GEMINI_15_FLASH = 0.0002;
+    public static final double COST_GEMINI_20_FLASH = 0.0002;
+    public static final double COST_GEMINI_25_FLASH = 0.0003;
 
     // Flashcard Recommendations
     public static final boolean RECOMMENDED_GPT_4O = false;
@@ -186,6 +204,7 @@ public class AIConstants {
     public static final boolean RECOMMENDED_GPT_4 = false;
     public static final boolean RECOMMENDED_O1_PREVIEW = false;
     public static final boolean RECOMMENDED_GPT_35_TURBO = false;
+    public static final boolean RECOMMENDED_GPT_5_NANO = true;
     public static final boolean RECOMMENDED_CLAUDE_SONNET_4 = true;
     public static final boolean RECOMMENDED_CLAUDE_OPUS_4_1 = false;
     public static final boolean RECOMMENDED_CLAUDE_35_SONNET = true;
@@ -196,7 +215,9 @@ public class AIConstants {
     public static final boolean RECOMMENDED_GEMINI_PRO = false;
     public static final boolean RECOMMENDED_GEMINI_PRO_VISION = false;
     public static final boolean RECOMMENDED_GEMINI_15_PRO = false;
-    public static final boolean RECOMMENDED_GEMINI_15_FLASH = true;
+    public static final boolean RECOMMENDED_GEMINI_15_FLASH = false;
+    public static final boolean RECOMMENDED_GEMINI_20_FLASH = true;
+    public static final boolean RECOMMENDED_GEMINI_25_FLASH = true;
 
     // Token Estimation
     public static final int CHARS_PER_TOKEN_ESTIMATE = 4;

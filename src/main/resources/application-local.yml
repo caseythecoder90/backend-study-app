@@ -7,7 +7,9 @@ spring:
 
   ai:
     openai:
-      api-key: ENC(5GzJ4frB5riM8qr1W6bG/+1EVdWJNZ9HJo0KQMa5DfY+sXjBVFlZ/0mO89pwQoEYsVgRdEUKPTpdEA00XZ/o3fNjCmgXS9C1Q3Drx5pJWH3Tb9D4JBnVWPcieEuUrphYgrHkuYXCea/VK1yWWlRecMsWxQsQ2BXu1UwWXWfF3E5Cadg5HsZZ9tC/zEHgoHz3mGL5l3JKN9ZdtM5SyL2kbbx+RB+2djfva0TgmsorceyDRUQiHkIO09ufFYivlmW5ynCv3g4A67BxpmUe9wtnSw==)
+      api-key: ENC(82RDh6TXLmQ+g5CNTGM+Uqr0KoP9nw8h5J8XcPTKjRWY7LIIIfa96aALEyzsSiu9yLu/O1ieFAKvfSIEdJxVIJCR0qki4lu7ocOf4naRSXR+bEVvdWTete1HoMgq2iFZ82ipGkcDjPvp4JwojC3Ac/5FlJdyIlbAcmNTus+031nmY5B/ECsBegPI/cecYFKzJDyYSibMsHvTM9lyswSpz0IqmghNIGNCPuweKsUD2uxxwKDYd7ndMpAed7ArRWDK8iY+Y9pz/lVQSptr6Bh4pg==)
+      connection-timeout: 60s
+      read-timeout: 60s
       chat:
         options:
           model: gpt-4o-mini
@@ -15,7 +17,9 @@ spring:
           max-tokens: 2000
 
     anthropic:
-      api-key: ENC(JMOx4xU96RN1SaYN+CW3cnAt0OwM9DSTE1sFSl47pHMH6dLWQ4SZMhHhAWb+601L4hKTYLn7ot7cNZQ8FzvzVDDGb9zpJOri22p15V5hf4SedsE4zD0IqJCRoO47TbBn1mKNh0A3Ng99KGHHDHyykBH9NxfekhozvMNRsHjlC+rOlmLDQEzq0SvY/hh7YZx4)
+      api-key: ENC(YdQvKv5zbYfDEynArpPc41G9s7HRgY1fuThtWVkgytszExwnzTBhKIK9VHLvogUrUF4KkHB+msqzfIO6KeJeSKPvIaRKds6dOAVIGz/6ifvb3WmrdL+ThEr/k9asCO/calUkQa5UMieEX0Saq3aDTG2U6XZzmfUtCT4pj/etwV2eXISIG2SE/afY1A++5kgZ)
+      connection-timeout: 60s
+      read-timeout: 60s
       chat:
         options:
           model: claude-sonnet-4-20250514
@@ -25,11 +29,16 @@ spring:
     vertex:
       ai:
         gemini:
-          project-id: your-gcp-project-id-here
+          project-id: study-app-472920
           location: us-central1
+          credentials-uri: classpath:study-app-472920-1182c7a4b7dd.json
+          transport: rest
+          connection-timeout: 60s
+          read-timeout: 60s
+          write-timeout: 60s
           chat:
             options:
-              model: gemini-pro
+              model: gemini-1.5-flash
               temperature: 0.7
               max-output-tokens: 2000
 
@@ -38,16 +47,16 @@ spring:
       client:
         registration:
           google:
-            client-id: ENC(1If39WulbO4ZrDPUxXcUwl5VcWrXjB0wiQ8mlwy4md8TsPwcsUZMsQZVadM76+1keyzgLtk1XMj0TqvBbNqyF6zuowHSGP7pEVkFu1/1DGlCg8oIdAgBPCsFQ+Ek7GpGnCg+beRjlsaka/hAbiZRXg==)
-            client-secret: ENC(eCw6D/P+p4xZwzPQRZlILHizPyixB4KtSDk5EkCh71He0zNM7lHRpXjAP0/mjWXJHIeLq0QfDPENvCWD1ojDBJOdaRNVmUN6AysnfngRXxo=)
+            client-id: ENC(xCYGXzxpsa9uKsbxzzLUw9UL14OAjxoHY90Z8a9NaeAFIfy+BEjIu6cc6LX76bk9Pz7M9lUPa+R2XAgVMI4x7hOJtJlinEL1dY5i2Pm4lu8JDapYeOYfq4IRsURGFBDZADglbMEPu13StHGGLUZ1uQ==)
+            client-secret: ENC(Kqk4oUXL2347o3/P/TK/MKmtrZ74f66cTTW+q4wKgqPpEwNltFVvCobBhk7XPwHp3PoJU6dwzCLyDhyv56phXn9k2T8s3PKyYgDauA7EYgU=)
             scope:
               - openid
               - profile
               - email
             redirect-uri: "http://localhost:8080/login/oauth2/code/google"
           github:
-            client-id: ENC(BQrMFlgTxWEOxxHfKMkEBOWCyzQy3qSHrNzcm7hEvI/0Rl7NAZ3QjikSLpLkJZ+iUuugwTWd7qKa9E6EOaGmcw==)
-            client-secret: ENC(+Z6ye6MQ6Eg8u5O1AX8ZPf5oNA6oE4RTAD0veqjQOmoLoxT7XYXbjZtDskOzjIr2kHr+O7KWJ5qQYMExosTpkUS4SCzr7xg0lTKoQcFbfZc=)
+            client-id: ENC(/fX1aEl7BdXRtpjJmXOl9c4Sofd9K/PCXYDl2RYOmSF7hK1BCHUkMoUC5AWt71jfh6QgDeV3EiyzqmW8AjWcLw==)
+            client-secret: ENC(s4a5sTQ+Wkg/bTOpQ9HCXgWsnWuhIaAvbMlfJRASsa4h9lHqD0JSjzmwmiz9CGMHfVmUn5/YIr/O7vzHZTsaU1p3XNCLZa720BaI1uFAsqI=)
             scope:
               - user:email
               - read:user
@@ -64,8 +73,9 @@ logging:
     org.springframework.security: DEBUG
 
 jwt:
-  secret: ENC(3XJJyCTf/4pOi7G3VIlU5QeTVcug+jmdOWFXW7J6Ard7yezZ6xRnGfrpJIduGVylTIbw5nGobtZ1t2tDxkjhQeybj7Yga1rhpWMYZSZ56p4=)
+  secret: ENC(JyRDKsQ2KzyPru4MOH9aJNfrd84BazOmMZ77bae3I5dIlI53Zfks/qo6mRahBz+VG6/Dk55SPppIKtul+UxcZ1GRP8TTEPIqPc8IRzZRwOg=)
   expiration: 86400000  # 24 hours
+  issuer: flashcards-app
 
 oauth:
   success-redirect-url: http://localhost:3000/auth/success
@@ -82,6 +92,13 @@ jasypt:
     iv-generator-class-name: org.jasypt.iv.RandomIvGenerator
     string-output-type: base64
 
+admin:
+  email: caseythecoder90@gmail.com
+  username: casquinn_admin
+  password: ENC(nX2JvzJTNlexIyCxdAP8HHY00HYTPr+KcBKDtj7G80HX3EzmXgHwIRgN8OEs3knZ)
+  first-name: Casey
+  last-name: Quinn
+
 ai:
   limits:
     max-flashcards-per-request: 20
@@ -91,7 +108,7 @@ ai:
     enabled: true
     ttl: 3600
   fallback:
-    enabled: true
+    enabled: false
     max-retries: 2
     fallback-models:
       - GPT_4O_MINI
