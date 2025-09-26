@@ -10,7 +10,7 @@ spring:
 
   data:
     mongodb:
-      uri: ${MONGO_URL}/flashcards
+      uri: ${MONGO_URL}
       database: ${MONGODB_DATABASE:flashcards}
       auto-index-creation: true
 
@@ -25,14 +25,14 @@ spring:
               - openid
               - profile
               - email
-            redirect-uri: ${GOOGLE_REDIRECT_URI:http://localhost:8080/login/oauth2/code/google}
+            redirect-uri: ${GOOGLE_REDIRECT_URI:https://backend-study-app-production.up.railway.app/login/oauth2/code/google}
           github:
             client-id: ${GITHUB_CLIENT_ID}
             client-secret: ${GITHUB_CLIENT_SECRET}
             scope:
               - user:email
               - read:user
-            redirect-uri: ${GITHUB_REDIRECT_URI:http://localhost:8080/login/oauth2/code/github}
+            redirect-uri: ${GITHUB_REDIRECT_URI:https://backend-study-app-production.up.railway.app/login/oauth2/code/github}
 
   ai:
     openai:
@@ -88,7 +88,7 @@ openapi:
   servers:
     - url: http://localhost:8080
       description: Development server
-    - url: https://api.flashcards.example.com
+    - url: https://backend-study-app-production.up.railway.app
       description: Production server
 
 jwt:

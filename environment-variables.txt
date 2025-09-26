@@ -3,7 +3,7 @@ FLASHCARDS APPLICATION - ENVIRONMENT VARIABLES
 
 DATABASE CONFIGURATION
 -----------------------
-MONGO_URL=mongodb://flashcards_user:flashcards_pass@localhost:27017
+MONGO_URL=mongodb://username:password@host:port/database
 MONGODB_DATABASE=flashcards
 
 JWT CONFIGURATION
@@ -15,13 +15,13 @@ OAUTH2 CONFIGURATION - GOOGLE
 ------------------------------
 GOOGLE_CLIENT_ID=ENC(1If39WulbO4ZrDPUxXcUwl5VcWrXjB0wiQ8mlwy4md8TsPwcsUZMsQZVadM76+1keyzgLtk1XMj0TqvBbNqyF6zuowHSGP7pEVkFu1/1DGlCg8oIdAgBPCsFQ+Ek7GpGnCg+beRjlsaka/hAbiZRXg==)
 GOOGLE_CLIENT_SECRET=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
-GOOGLE_REDIRECT_URI=http://localhost:8080/login/oauth2/code/google
+GOOGLE_REDIRECT_URI=https://backend-study-app-production.up.railway.app/login/oauth2/code/google
 
 OAUTH2 CONFIGURATION - GITHUB
 ------------------------------
 GITHUB_CLIENT_ID=Ov23liGZcrBYZbanIZ2u
 GITHUB_CLIENT_SECRET=2dd5aecb1668dfb24baaf7404b64515c6a5a47d6
-GITHUB_REDIRECT_URI=http://localhost:8080/login/oauth2/code/github
+GITHUB_REDIRECT_URI=https://backend-study-app-production.up.railway.app/login/oauth2/code/github
 
 AI SERVICES CONFIGURATION - OPENAI
 -----------------------------------
