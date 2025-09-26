@@ -7,6 +7,7 @@ import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.info.License;
 import io.swagger.v3.oas.models.security.SecurityRequirement;
 import io.swagger.v3.oas.models.security.SecurityScheme;
+import io.swagger.v3.oas.models.servers.Server;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -35,6 +36,12 @@ public class OpenApiConfig {
                         .license(new License()
                                 .name("MIT License")
                                 .url("https://opensource.org/licenses/MIT")))
+                .addServersItem(new Server()
+                        .url("https://backend-study-app-production.up.railway.app")
+                        .description("Production server"))
+                .addServersItem(new Server()
+                        .url("http://localhost:8080")
+                        .description("Development server"))
                 .addSecurityItem(new SecurityRequirement().addList(SWAGGER_SECURITY_SCHEME_NAME))
                 .components(new Components()
                         .addSecuritySchemes(SWAGGER_SECURITY_SCHEME_NAME, new SecurityScheme()

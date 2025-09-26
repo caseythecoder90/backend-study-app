@@ -67,6 +67,7 @@ server:
   error:
     include-message: always
     include-binding-errors: always
+  forward-headers-strategy: framework
 
 logging:
   level:
@@ -99,8 +100,8 @@ app:
   name: ${APP_NAME:Flashcards}
 
 oauth:
-  success-redirect-url: ${OAUTH_SUCCESS_REDIRECT_URL:http://localhost:3000/auth/success}
-  failure-redirect-url: ${OAUTH_FAILURE_REDIRECT_URL:http://localhost:3000/auth/error}
+  success-redirect-url: ${OAUTH_SUCCESS_REDIRECT_URL:https://backend-study-app-production.up.railway.app/auth/success}
+  failure-redirect-url: ${OAUTH_FAILURE_REDIRECT_URL:https://backend-study-app-production.up.railway.app/auth/error}
 
 jasypt:
   encryptor:
