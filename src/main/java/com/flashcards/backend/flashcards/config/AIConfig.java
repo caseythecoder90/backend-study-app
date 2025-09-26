@@ -14,10 +14,7 @@ import org.springframework.context.annotation.Primary;
 @RequiredArgsConstructor
 public class AIConfig {
 
-    @Bean
-    public ChatClient chatClient(ChatClient.Builder chatClientBuilder) {
-        return chatClientBuilder.build();
-    }
+    // ChatClient bean removed to avoid conflicts with specific ChatModel beans
 
     @Bean
     @Primary

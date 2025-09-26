@@ -1,5 +1,6 @@
 package com.flashcards.backend.flashcards.dto;
 
+import com.flashcards.backend.flashcards.enums.AIModelEnum;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
@@ -33,4 +34,6 @@ public class AIGenerateRequestDto {
 
     @Size(max = 50, message = "Category must not exceed 50 characters")
     private String category;
+
+    private AIModelEnum model;
 }

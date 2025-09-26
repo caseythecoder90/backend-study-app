@@ -98,6 +98,21 @@ public class ErrorMessages {
     public static final String AI_DIFFICULTY_LEVEL_INVALID = "Invalid difficulty level: %s, defaulting to NOT_SET";
     public static final String AI_CONTENT_TYPE_INVALID = "Invalid content type: %s, defaulting to TEXT_ONLY";
     public static final String AI_SERVICE_UNEXPECTED_ERROR = "Unexpected error in AIService";
+    public static final String AI_PROVIDER_UNKNOWN = "Unknown AI provider: %s";
+    public static final String AI_MODEL_UNAVAILABLE_FALLBACK_DISABLED = "AI model %s is unavailable and fallback is disabled";
+    public static final String AI_ALL_MODELS_UNAVAILABLE = "All AI models (primary and fallbacks) are unavailable";
+    public static final String AI_RESPONSE_INCOMPLETE = "AI response is incomplete or malformed. The JSON appears to be truncated.";
+    public static final String AI_NO_VALID_FLASHCARDS = "No valid flashcards were generated from the AI response";
+    public static final String AI_RESPONSE_TRUNCATED = " - the response appears to be incomplete or truncated";
+    public static final String AI_RESPONSE_MALFORMED = " - the JSON structure is malformed or incomplete";
+    public static final String AI_PRIMARY_MODEL_FAILED = "Primary model %s failed: %s";
+    public static final String AI_FALLBACK_DISABLED = "Fallback disabled, throwing original exception";
+    public static final String AI_FALLBACK_MODEL_INVALID = "Invalid fallback model name in configuration: %s";
+    public static final String AI_FALLBACK_MODEL_FAILED = "Fallback model %s failed: %s";
+    public static final String AI_ATTEMPTING_FALLBACK = "Attempting fallback with model: %s";
+    public static final String AI_FALLBACK_SUCCESS = "Successfully generated flashcards using fallback model: %s";
+    public static final String AI_FLASHCARDS_INCOMPLETE = "AI generated %s flashcards but %s were requested. Some flashcards may be invalid or incomplete.";
+    public static final String AI_FLASHCARDS_PARSED = "Successfully parsed %s flashcards from AI response (requested: %s)";
 
     // AI Error Detection Keywords
     public static final String AI_ERROR_RATE_LIMIT = "rate limit";
@@ -110,6 +125,12 @@ public class ErrorMessages {
     public static final String AI_ERROR_SERVICE = "service";
     public static final String AI_ERROR_MODEL = "model";
     public static final String AI_ERROR_INVALID = "invalid";
+
+    // Configuration Error Messages
+    public static final String CONFIG_API_KEY_MISSING = "%s API key is required but not configured";
+    public static final String CONFIG_PROJECT_ID_MISSING = "%s project ID is required but not configured";
+    public static final String CONFIG_PROVIDER_INVALID = "Invalid AI provider configuration for %s";
+    public static final String CONFIG_PROVIDER_UNAVAILABLE = "AI provider %s is not available";
 
     private ErrorMessages() {
         // Private constructor to prevent instantiation

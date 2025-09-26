@@ -10,7 +10,7 @@ spring:
 
   data:
     mongodb:
-      uri: ${MONGODB_URI}
+      uri: ${MONGO_URL}/flashcards
       database: ${MONGODB_DATABASE:flashcards}
       auto-index-creation: true
 
@@ -42,6 +42,25 @@ spring:
           model: ${OPENAI_MODEL:gpt-4o-mini}
           temperature: ${OPENAI_TEMPERATURE:0.7}
           max-tokens: ${OPENAI_MAX_TOKENS:2000}
+
+    anthropic:
+      api-key: ${ANTHROPIC_API_KEY}
+      chat:
+        options:
+          model: ${ANTHROPIC_MODEL:claude-3-sonnet-20240229}
+          temperature: ${ANTHROPIC_TEMPERATURE:0.7}
+          max-tokens: ${ANTHROPIC_MAX_TOKENS:2000}
+
+    vertex:
+      ai:
+        gemini:
+          project-id: ${VERTEX_AI_PROJECT_ID}
+          location: ${VERTEX_AI_LOCATION:us-central1}
+          chat:
+            options:
+              model: ${VERTEX_AI_MODEL:gemini-pro}
+              temperature: ${VERTEX_AI_TEMPERATURE:0.7}
+              max-output-tokens: ${VERTEX_AI_MAX_TOKENS:2000}
 
 server:
   port: 8080
@@ -102,3 +121,10 @@ ai:
   cache:
     enabled: true
     ttl: 3600
+  fallback:
+    enabled: true
+    max-retries: 2
+    fallback-models:
+      - GPT_4O_MINI
+      - CLAUDE_3_5_HAIKU
+      - GEMINI_1_5_FLASH

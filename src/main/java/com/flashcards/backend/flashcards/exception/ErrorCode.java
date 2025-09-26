@@ -23,6 +23,7 @@ public enum ErrorCode {
     SERVICE_AI_QUOTA_EXCEEDED("SVC_011", "AI quota exceeded"),
     SERVICE_AI_INVALID_IMAGE("SVC_012", "AI invalid image"),
     SERVICE_AI_PROCESSING_TIMEOUT("SVC_013", "AI processing timeout"),
+    SERVICE_AI_PROVIDER_UNKNOWN("SVC_014", "Unknown AI provider"),
 
     // Controller Layer Error Codes
     CONTROLLER_BAD_REQUEST("CTL_001", "Bad request"),
@@ -41,6 +42,12 @@ public enum ErrorCode {
     AUTH_RECOVERY_CODE_INVALID("AUTH_008", "Invalid recovery code"),
     AUTH_RECOVERY_CODES_EXHAUSTED("AUTH_009", "All recovery codes have been used"),
     AUTH_RECOVERY_CODES_NOT_ENABLED("AUTH_010", "Recovery codes are not enabled"),
+
+    // Configuration Error Codes
+    CONFIG_MISSING_API_KEY("CFG_001", "API key is required but not configured"),
+    CONFIG_MISSING_PROJECT_ID("CFG_002", "Project ID is required but not configured"),
+    CONFIG_INVALID_PROVIDER("CFG_003", "Invalid AI provider configuration"),
+    CONFIG_PROVIDER_UNAVAILABLE("CFG_004", "AI provider is not available"),
 
     // Operations Error Codes
     ENCRYPTION_ERROR("OPS_001", "Encryption failed"),

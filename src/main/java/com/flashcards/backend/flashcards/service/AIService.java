@@ -4,6 +4,8 @@ import com.flashcards.backend.flashcards.config.AIConfigProperties;
 import com.flashcards.backend.flashcards.dto.AIGenerateRequestDto;
 import com.flashcards.backend.flashcards.dto.CreateFlashcardDto;
 import com.flashcards.backend.flashcards.dto.FlashcardDto;
+import com.flashcards.backend.flashcards.enums.AIModelEnum;
+import com.flashcards.backend.flashcards.enums.AIProviderEnum;
 import com.flashcards.backend.flashcards.exception.ErrorCode;
 import com.flashcards.backend.flashcards.exception.ServiceException;
 import com.flashcards.backend.flashcards.model.Flashcard;
@@ -14,9 +16,13 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.ai.chat.model.ChatModel;
+import org.springframework.ai.chat.prompt.ChatOptions;
 import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.ai.chat.prompt.PromptTemplate;
+import org.springframework.ai.anthropic.AnthropicChatOptions;
+import org.springframework.ai.openai.OpenAiChatOptions;
+import org.springframework.ai.vertexai.gemini.VertexAiGeminiChatOptions;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -24,6 +30,21 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.function.Supplier;
 
+import static com.flashcards.backend.flashcards.constants.AIConstants.DEFAULT_TEMPERATURE;
+import static com.flashcards.backend.flashcards.constants.AIConstants.FLASHCARD_GENERATION_TEMPLATE;
+import static com.flashcards.backend.flashcards.constants.AIConstants.JSON_FIELD_BACK;
+import static com.flashcards.backend.flashcards.constants.AIConstants.JSON_FIELD_CODE;
+import static com.flashcards.backend.flashcards.constants.AIConstants.JSON_FIELD_CODE_BLOCKS;
+import static com.flashcards.backend.flashcards.constants.AIConstants.JSON_FIELD_DIFFICULTY;
+import static com.flashcards.backend.flashcards.constants.AIConstants.JSON_FIELD_FILE_NAME;
+import static com.flashcards.backend.flashcards.constants.AIConstants.JSON_FIELD_FRONT;
+import static com.flashcards.backend.flashcards.constants.AIConstants.JSON_FIELD_HIGHLIGHTED;
+import static com.flashcards.backend.flashcards.constants.AIConstants.JSON_FIELD_HINT;
+import static com.flashcards.backend.flashcards.constants.AIConstants.JSON_FIELD_LANGUAGE;
+import static com.flashcards.backend.flashcards.constants.AIConstants.JSON_FIELD_TAGS;
+import static com.flashcards.backend.flashcards.constants.AIConstants.JSON_FIELD_TEXT;
+import static com.flashcards.backend.flashcards.constants.AIConstants.JSON_FIELD_TYPE;
+import static com.flashcards.backend.flashcards.constants.ErrorMessages.AI_ALL_MODELS_UNAVAILABLE;
 import static com.flashcards.backend.flashcards.constants.ErrorMessages.AI_ERROR_BILLING;
 import static com.flashcards.backend.flashcards.constants.ErrorMessages.AI_ERROR_INVALID;
 import static com.flashcards.backend.flashcards.constants.ErrorMessages.AI_ERROR_MODEL;
@@ -35,8 +56,13 @@ import static com.flashcards.backend.flashcards.constants.ErrorMessages.AI_ERROR
 import static com.flashcards.backend.flashcards.constants.ErrorMessages.AI_ERROR_TOO_MANY_REQUESTS;
 import static com.flashcards.backend.flashcards.constants.ErrorMessages.AI_ERROR_UNAVAILABLE;
 import static com.flashcards.backend.flashcards.constants.ErrorMessages.AI_FLASHCARD_COUNT_EXCEEDED;
+import static com.flashcards.backend.flashcards.constants.ErrorMessages.AI_MODEL_UNAVAILABLE_FALLBACK_DISABLED;
+import static com.flashcards.backend.flashcards.constants.ErrorMessages.AI_NO_VALID_FLASHCARDS;
 import static com.flashcards.backend.flashcards.constants.ErrorMessages.AI_REQUEST_NULL;
+import static com.flashcards.backend.flashcards.constants.ErrorMessages.AI_RESPONSE_INCOMPLETE;
+import static com.flashcards.backend.flashcards.constants.ErrorMessages.AI_RESPONSE_MALFORMED;
 import static com.flashcards.backend.flashcards.constants.ErrorMessages.AI_RESPONSE_PARSE_FAILED;
+import static com.flashcards.backend.flashcards.constants.ErrorMessages.AI_RESPONSE_TRUNCATED;
 import static com.flashcards.backend.flashcards.constants.ErrorMessages.AI_TEXT_LENGTH_EXCEEDED;
 import static com.flashcards.backend.flashcards.constants.ErrorMessages.SERVICE_OPERATION_FAILED;
 
@@ -45,53 +71,9 @@ import static com.flashcards.backend.flashcards.constants.ErrorMessages.SERVICE_
 @RequiredArgsConstructor
 public class AIService {
 
-    private final ChatClient chatClient;
+    private final ModelSelectorService modelSelectorService;
     private final AIConfigProperties aiProperties;
     private final ObjectMapper objectMapper;
-
-    private static final String FLASHCARD_GENERATION_TEMPLATE = """
-            Generate exactly {count} flashcards from the following text content:
-
-            {text}
-
-            Requirements:
-            - Create educational flashcards that focus on key concepts
-            - Each flashcard should have distinct front and back content
-            - Front should be a question or prompt
-            - Back should be a clear, concise answer
-            - Include code examples where relevant (format as JSON with language and code fields)
-            - Vary difficulty levels appropriately
-            - Generate relevant tags for categorization
-
-            Return ONLY a valid JSON array with this exact structure (no additional text):
-            [
-              {{
-                "front": {{
-                  "text": "Question or prompt text",
-                  "codeBlocks": [
-                    {{
-                      "language": "java",
-                      "code": "example code",
-                      "fileName": "optional filename",
-                      "highlighted": false
-                    }}
-                  ],
-                  "type": "TEXT_ONLY"
-                }},
-                "back": {{
-                  "text": "Answer or explanation text",
-                  "codeBlocks": [],
-                  "type": "TEXT_ONLY"
-                }},
-                "hint": "Optional helpful hint",
-                "tags": ["tag1", "tag2"],
-                "difficulty": "MEDIUM"
-              }}
-            ]
-
-            Valid difficulty levels: EASY, MEDIUM, HARD, NOT_SET
-            Valid content types: TEXT_ONLY, CODE_ONLY, MIXED
-            """;
 
     public List<CreateFlashcardDto> generateFlashcardsFromText(AIGenerateRequestDto request) {
         return executeWithExceptionHandling(() -> {
@@ -100,15 +82,77 @@ public class AIService {
             String promptText = buildPrompt(request);
             log.debug("Sending prompt to AI service: {}", promptText);
 
-            String response = chatClient.prompt()
-                    .user(promptText)
-                    .call()
-                    .content();
+            // Get the selected model enum (with default)
+            AIModelEnum selectedModel = Objects.nonNull(request.getModel()) ? request.getModel() : AIModelEnum.GPT_4O_MINI;
 
-            log.debug("Received AI response: {}", response);
-
-            return parseFlashcardResponse(response, request);
+            // Try the primary model with fallback support
+            return generateWithFallback(selectedModel, promptText, request);
         }, () -> SERVICE_OPERATION_FAILED.formatted("generate flashcards from AI", "text"));
+    }
+
+    private List<CreateFlashcardDto> generateWithFallback(AIModelEnum primaryModel, String promptText, AIGenerateRequestDto request) {
+        // First try with the requested model
+        try {
+            return attemptGeneration(primaryModel, promptText, request);
+        } catch (Exception primaryException) {
+            log.warn("Primary model {} failed: {}", primaryModel.getDisplayName(), primaryException.getMessage());
+
+            // Check if fallback is enabled
+            if (BooleanUtils.isFalse(aiProperties.getFallback().isEnabled())) {
+                log.error("Fallback disabled, throwing original exception");
+                throw new ServiceException(
+                    AI_MODEL_UNAVAILABLE_FALLBACK_DISABLED.formatted(primaryModel.getDisplayName()),
+                    ErrorCode.SERVICE_AI_SERVICE_UNAVAILABLE,
+                    primaryException
+                );
+            }
+
+            // Try fallback models
+            String[] fallbackModelNames = aiProperties.getFallback().getFallbackModels();
+            for (String fallbackModelName : fallbackModelNames) {
+                try {
+                    AIModelEnum fallbackModel = AIModelEnum.valueOf(fallbackModelName);
+
+                    // Skip if it's the same as the primary model that already failed
+                    if (Objects.equals(fallbackModel, primaryModel)) {
+                        continue;
+                    }
+
+                    log.info("Attempting fallback with model: {}", fallbackModel.getDisplayName());
+                    List<CreateFlashcardDto> result = attemptGeneration(fallbackModel, promptText, request);
+                    log.info("Successfully generated flashcards using fallback model: {}", fallbackModel.getDisplayName());
+                    return result;
+
+                } catch (IllegalArgumentException e) {
+                    log.warn("Invalid fallback model name in configuration: {}", fallbackModelName);
+                } catch (Exception fallbackException) {
+                    log.warn("Fallback model {} failed: {}", fallbackModelName, fallbackException.getMessage());
+                }
+            }
+
+            // All fallback attempts failed
+            throw new ServiceException(
+                AI_ALL_MODELS_UNAVAILABLE,
+                ErrorCode.SERVICE_AI_SERVICE_UNAVAILABLE,
+                primaryException
+            );
+        }
+    }
+
+    private List<CreateFlashcardDto> attemptGeneration(AIModelEnum model, String promptText, AIGenerateRequestDto request) {
+        ChatModel selectedChatModel = modelSelectorService.selectChatModel(model);
+        modelSelectorService.validateModelForText(model, request.getText());
+        log.debug("Attempting generation with AI model: {} ({})", model.getDisplayName(), model.getModelId());
+
+        // Create ChatOptions with the specific model ID
+        ChatOptions chatOptions = createChatOptions(model);
+        Prompt prompt = new Prompt(promptText, chatOptions);
+
+        String response = selectedChatModel.call(prompt).getResult().getOutput().getContent();
+
+        log.debug("Received AI response from {}: {}", model.getDisplayName(), response);
+
+        return parseFlashcardResponse(response, request);
     }
 
     private String buildPrompt(AIGenerateRequestDto request) {
@@ -121,23 +165,90 @@ public class AIService {
         return promptTemplate.render(promptVariables);
     }
 
+    /**
+     * Creates ChatOptions with the specific model ID for the given AI model.
+     * This ensures we use the exact model requested, not just the provider's default.
+     */
+    private ChatOptions createChatOptions(AIModelEnum selectedModel) {
+        AIProviderEnum provider = selectedModel.getProvider();
+
+        return switch (provider) {
+            case OPENAI -> OpenAiChatOptions.builder()
+                    .withModel(selectedModel.getModelId())
+                    .withTemperature(DEFAULT_TEMPERATURE)
+                    .withMaxTokens(selectedModel.getMaxOutputTokens())
+                    .build();
+
+            case ANTHROPIC -> AnthropicChatOptions.builder()
+                    .withModel(selectedModel.getModelId())
+                    .withTemperature(DEFAULT_TEMPERATURE)
+                    .withMaxTokens(selectedModel.getMaxOutputTokens())
+                    .build();
+
+            case GOOGLE -> VertexAiGeminiChatOptions.builder()
+                    .withModel(selectedModel.getModelId())
+                    .withTemperature(DEFAULT_TEMPERATURE)
+                    .withMaxOutputTokens(selectedModel.getMaxOutputTokens())
+                    .build();
+        };
+    }
+
     private List<CreateFlashcardDto> parseFlashcardResponse(String response, AIGenerateRequestDto request) {
         try {
             String cleanResponse = cleanJsonResponse(response);
+
+            // Validate JSON is not empty or incomplete
+            if (StringUtils.isBlank(cleanResponse) || BooleanUtils.isFalse(cleanResponse.trim().endsWith("]"))) {
+                log.error("AI response appears to be incomplete or empty. Response length: {}, ends with ]: {}",
+                    cleanResponse.length(), cleanResponse.trim().endsWith("]"));
+                throw new ServiceException(
+                    AI_RESPONSE_INCOMPLETE,
+                    ErrorCode.SERVICE_AI_GENERATION_ERROR
+                );
+            }
+
             List<Map<String, Object>> flashcardMaps = objectMapper.readValue(
                     cleanResponse,
                     new TypeReference<>() {}
             );
 
-            return flashcardMaps.stream()
+            List<CreateFlashcardDto> flashcards = flashcardMaps.stream()
                     .map(flashcardMap -> convertToCreateFlashcardDto(flashcardMap, request))
                     .filter(Objects::nonNull)
                     .toList();
 
+            // Validate we got the expected number of flashcards
+            if (flashcards.size() < request.getCount()) {
+                log.warn("AI generated {} flashcards but {} were requested. Some flashcards may be invalid or incomplete.",
+                    flashcards.size(), request.getCount());
+            }
+
+            if (flashcards.isEmpty()) {
+                throw new ServiceException(
+                    AI_NO_VALID_FLASHCARDS,
+                    ErrorCode.SERVICE_AI_GENERATION_ERROR
+                );
+            }
+
+            log.info("Successfully parsed {} flashcards from AI response (requested: {})",
+                flashcards.size(), request.getCount());
+
+            return flashcards;
+
         } catch (JsonProcessingException e) {
-            log.error("Failed to parse AI response as JSON: {}", response, e);
+            log.error("Failed to parse AI response as JSON. Response length: {}, Error: {}",
+                    response.length(), e.getMessage());
+            log.debug("Full AI response that failed parsing: {}", response);
+
+            String errorMessage = AI_RESPONSE_PARSE_FAILED;
+            if (e.getMessage().contains("Unexpected end-of-input")) {
+                errorMessage += AI_RESPONSE_TRUNCATED;
+            } else if (e.getMessage().contains("expected close marker")) {
+                errorMessage += AI_RESPONSE_MALFORMED;
+            }
+
             throw new ServiceException(
-                    AI_RESPONSE_PARSE_FAILED,
+                    errorMessage,
                     ErrorCode.SERVICE_AI_GENERATION_ERROR,
                     e
             );
@@ -178,29 +289,29 @@ public class AIService {
                     .userId(request.getUserId());
 
             // Parse front content
-            Map<String, Object> frontMap = (Map<String, Object>) flashcardMap.get("front");
+            Map<String, Object> frontMap = (Map<String, Object>) flashcardMap.get(JSON_FIELD_FRONT);
             if (Objects.nonNull(frontMap)) {
                 builder.front(parseCardContent(frontMap));
             }
 
             // Parse back content
-            Map<String, Object> backMap = (Map<String, Object>) flashcardMap.get("back");
+            Map<String, Object> backMap = (Map<String, Object>) flashcardMap.get(JSON_FIELD_BACK);
             if (Objects.nonNull(backMap)) {
                 builder.back(parseCardContent(backMap));
             }
 
             // Parse other fields
-            if (flashcardMap.containsKey("hint")) {
-                builder.hint((String) flashcardMap.get("hint"));
+            if (flashcardMap.containsKey(JSON_FIELD_HINT)) {
+                builder.hint((String) flashcardMap.get(JSON_FIELD_HINT));
             }
 
-            if (flashcardMap.containsKey("tags")) {
-                List<String> tags = (List<String>) flashcardMap.get("tags");
+            if (flashcardMap.containsKey(JSON_FIELD_TAGS)) {
+                List<String> tags = (List<String>) flashcardMap.get(JSON_FIELD_TAGS);
                 builder.tags(tags);
             }
 
-            if (flashcardMap.containsKey("difficulty")) {
-                String difficultyStr = (String) flashcardMap.get("difficulty");
+            if (flashcardMap.containsKey(JSON_FIELD_DIFFICULTY)) {
+                String difficultyStr = (String) flashcardMap.get(JSON_FIELD_DIFFICULTY);
                 builder.difficulty(parseDifficulty(difficultyStr));
             }
 
@@ -216,17 +327,17 @@ public class AIService {
     private FlashcardDto.CardContentDto parseCardContent(Map<String, Object> contentMap) {
         FlashcardDto.CardContentDto.CardContentDtoBuilder builder = FlashcardDto.CardContentDto.builder();
 
-        if (contentMap.containsKey("text")) {
-            builder.text((String) contentMap.get("text"));
+        if (contentMap.containsKey(JSON_FIELD_TEXT)) {
+            builder.text((String) contentMap.get(JSON_FIELD_TEXT));
         }
 
-        if (contentMap.containsKey("type")) {
-            String typeStr = (String) contentMap.get("type");
+        if (contentMap.containsKey(JSON_FIELD_TYPE)) {
+            String typeStr = (String) contentMap.get(JSON_FIELD_TYPE);
             builder.type(parseContentType(typeStr));
         }
 
-        if (contentMap.containsKey("codeBlocks")) {
-            List<Map<String, Object>> codeBlockMaps = (List<Map<String, Object>>) contentMap.get("codeBlocks");
+        if (contentMap.containsKey(JSON_FIELD_CODE_BLOCKS)) {
+            List<Map<String, Object>> codeBlockMaps = (List<Map<String, Object>>) contentMap.get(JSON_FIELD_CODE_BLOCKS);
             List<FlashcardDto.CodeBlockDto> codeBlocks = codeBlockMaps.stream()
                     .map(this::parseCodeBlock)
                     .filter(Objects::nonNull)
@@ -241,20 +352,20 @@ public class AIService {
         try {
             FlashcardDto.CodeBlockDto.CodeBlockDtoBuilder builder = FlashcardDto.CodeBlockDto.builder();
 
-            if (codeBlockMap.containsKey("language")) {
-                builder.language((String) codeBlockMap.get("language"));
+            if (codeBlockMap.containsKey(JSON_FIELD_LANGUAGE)) {
+                builder.language((String) codeBlockMap.get(JSON_FIELD_LANGUAGE));
             }
 
-            if (codeBlockMap.containsKey("code")) {
-                builder.code((String) codeBlockMap.get("code"));
+            if (codeBlockMap.containsKey(JSON_FIELD_CODE)) {
+                builder.code((String) codeBlockMap.get(JSON_FIELD_CODE));
             }
 
-            if (codeBlockMap.containsKey("fileName")) {
-                builder.fileName((String) codeBlockMap.get("fileName"));
+            if (codeBlockMap.containsKey(JSON_FIELD_FILE_NAME)) {
+                builder.fileName((String) codeBlockMap.get(JSON_FIELD_FILE_NAME));
             }
 
-            if (codeBlockMap.containsKey("highlighted")) {
-                builder.highlighted(BooleanUtils.isTrue((Boolean) codeBlockMap.get("highlighted")));
+            if (codeBlockMap.containsKey(JSON_FIELD_HIGHLIGHTED)) {
+                builder.highlighted(BooleanUtils.isTrue((Boolean) codeBlockMap.get(JSON_FIELD_HIGHLIGHTED)));
             }
 
             return builder.build();

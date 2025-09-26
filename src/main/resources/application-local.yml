@@ -1,0 +1,99 @@
+spring:
+  data:
+    mongodb:
+      uri: mongodb://flashcards_user:flashcards_pass@localhost:27017/flashcards?authSource=flashcards
+      database: flashcards
+      auto-index-creation: true
+
+  ai:
+    openai:
+      api-key: ENC(5GzJ4frB5riM8qr1W6bG/+1EVdWJNZ9HJo0KQMa5DfY+sXjBVFlZ/0mO89pwQoEYsVgRdEUKPTpdEA00XZ/o3fNjCmgXS9C1Q3Drx5pJWH3Tb9D4JBnVWPcieEuUrphYgrHkuYXCea/VK1yWWlRecMsWxQsQ2BXu1UwWXWfF3E5Cadg5HsZZ9tC/zEHgoHz3mGL5l3JKN9ZdtM5SyL2kbbx+RB+2djfva0TgmsorceyDRUQiHkIO09ufFYivlmW5ynCv3g4A67BxpmUe9wtnSw==)
+      chat:
+        options:
+          model: gpt-4o-mini
+          temperature: 0.7
+          max-tokens: 2000
+
+    anthropic:
+      api-key: ENC(JMOx4xU96RN1SaYN+CW3cnAt0OwM9DSTE1sFSl47pHMH6dLWQ4SZMhHhAWb+601L4hKTYLn7ot7cNZQ8FzvzVDDGb9zpJOri22p15V5hf4SedsE4zD0IqJCRoO47TbBn1mKNh0A3Ng99KGHHDHyykBH9NxfekhozvMNRsHjlC+rOlmLDQEzq0SvY/hh7YZx4)
+      chat:
+        options:
+          model: claude-sonnet-4-20250514
+          temperature: 0.7
+          max-tokens: 2000
+
+    vertex:
+      ai:
+        gemini:
+          project-id: your-gcp-project-id-here
+          location: us-central1
+          chat:
+            options:
+              model: gemini-pro
+              temperature: 0.7
+              max-output-tokens: 2000
+
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: ENC(1If39WulbO4ZrDPUxXcUwl5VcWrXjB0wiQ8mlwy4md8TsPwcsUZMsQZVadM76+1keyzgLtk1XMj0TqvBbNqyF6zuowHSGP7pEVkFu1/1DGlCg8oIdAgBPCsFQ+Ek7GpGnCg+beRjlsaka/hAbiZRXg==)
+            client-secret: ENC(eCw6D/P+p4xZwzPQRZlILHizPyixB4KtSDk5EkCh71He0zNM7lHRpXjAP0/mjWXJHIeLq0QfDPENvCWD1ojDBJOdaRNVmUN6AysnfngRXxo=)
+            scope:
+              - openid
+              - profile
+              - email
+            redirect-uri: "http://localhost:8080/login/oauth2/code/google"
+          github:
+            client-id: ENC(BQrMFlgTxWEOxxHfKMkEBOWCyzQy3qSHrNzcm7hEvI/0Rl7NAZ3QjikSLpLkJZ+iUuugwTWd7qKa9E6EOaGmcw==)
+            client-secret: ENC(+Z6ye6MQ6Eg8u5O1AX8ZPf5oNA6oE4RTAD0veqjQOmoLoxT7XYXbjZtDskOzjIr2kHr+O7KWJ5qQYMExosTpkUS4SCzr7xg0lTKoQcFbfZc=)
+            scope:
+              - user:email
+              - read:user
+            redirect-uri: "http://localhost:8080/login/oauth2/code/github"
+
+server:
+  port: 8080
+
+logging:
+  level:
+    root: INFO
+    com.flashcards.backend: DEBUG
+    org.springframework.data.mongodb: DEBUG
+    org.springframework.security: DEBUG
+
+jwt:
+  secret: ENC(3XJJyCTf/4pOi7G3VIlU5QeTVcug+jmdOWFXW7J6Ard7yezZ6xRnGfrpJIduGVylTIbw5nGobtZ1t2tDxkjhQeybj7Yga1rhpWMYZSZ56p4=)
+  expiration: 86400000  # 24 hours
+
+oauth:
+  success-redirect-url: http://localhost:3000/auth/success
+  failure-redirect-url: http://localhost:3000/auth/error
+
+jasypt:
+  encryptor:
+    password: xNWQql0Oy04Do+MqtJfPuB/hFEyo79X1Ehj0DKtQXm4=
+    algorithm: PBEWITHHMACSHA512ANDAES_256
+    key-obtention-iterations: 1000
+    pool-size: 1
+    provider-name: SunJCE
+    salt-generator-class-name: org.jasypt.salt.RandomSaltGenerator
+    iv-generator-class-name: org.jasypt.iv.RandomIvGenerator
+    string-output-type: base64
+
+ai:
+  limits:
+    max-flashcards-per-request: 20
+    max-text-length: 10000
+    rate-limit-per-minute: 10
+  cache:
+    enabled: true
+    ttl: 3600
+  fallback:
+    enabled: true
+    max-retries: 2
+    fallback-models:
+      - GPT_4O_MINI
+      - CLAUDE_3_5_HAIKU
+      - GEMINI_1_5_FLASH

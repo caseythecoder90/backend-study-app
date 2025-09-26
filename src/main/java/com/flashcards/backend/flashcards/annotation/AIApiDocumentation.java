@@ -38,18 +38,36 @@ public @interface AIApiDocumentation {
             content = @Content(
                     mediaType = "application/json",
                     schema = @Schema(implementation = AIGenerateRequestDto.class),
-                    examples = @ExampleObject(
-                            name = "Java Programming Content",
-                            summary = "Generate flashcards from Java tutorial text",
-                            value = """
-                                    {
-                                      "deckId": "deck123",
-                                      "userId": "user456",
-                                      "text": "Java is an object-oriented programming language. Classes are blueprints for creating objects. Objects are instances of classes that contain data (attributes) and methods (behaviors). Inheritance allows classes to inherit properties from other classes using the extends keyword.",
-                                      "count": 5
-                                    }
-                                    """
-                    )
+                    examples = {
+                            @ExampleObject(
+                                    name = "Spring Framework Fundamentals",
+                                    summary = "Generate flashcards from Spring Framework content with GPT-4o-mini",
+                                    value = """
+                                            {
+                                              "deckId": "deck123",
+                                              "userId": "user456",
+                                              "text": "Spring Framework is a comprehensive programming and configuration model for Java applications. At its core, Spring is built around the concept of Inversion of Control (IoC) and Dependency Injection (DI). The Spring Container is responsible for managing the lifecycle of objects called beans. Beans are objects that are instantiated, assembled, and managed by the Spring IoC container. Configuration was traditionally XML-based, but modern Spring applications are annotation-driven. The @Component annotation is the main stereotype annotation that marks a class as a Spring component. @Service, @Repository, and @Controller are specialized versions of @Component that provide additional semantic meaning. @Service is used for business logic components, @Repository for data access components, and @Controller for web controllers. @Autowired enables automatic dependency injection by type. @Configuration classes define beans programmatically using @Bean methods. Component scanning with @ComponentScan automatically discovers and registers beans. Spring Boot further simplifies configuration with auto-configuration and starter dependencies.",
+                                              "count": 8,
+                                              "difficulty": "MEDIUM",
+                                              "category": "Spring Framework",
+                                              "model": "GPT_4O_MINI"
+                                            }
+                                            """
+                            ),
+                            @ExampleObject(
+                                    name = "Advanced Content with Claude",
+                                    summary = "Generate flashcards using Claude 3.5 Sonnet for complex topics",
+                                    value = """
+                                            {
+                                              "deckId": "deck456",
+                                              "userId": "user789",
+                                              "text": "Advanced Spring concepts include Aspect-Oriented Programming (AOP) which allows for cross-cutting concerns like logging and security. Spring AOP uses proxies to implement aspects. @Transactional annotation enables declarative transaction management. Spring Boot provides auto-configuration that automatically configures Spring applications based on the dependencies present in the classpath.",
+                                              "count": 5,
+                                              "model": "CLAUDE_3_5_SONNET"
+                                            }
+                                            """
+                            )
+                    }
             )
     )
     @ApiResponses(value = {
