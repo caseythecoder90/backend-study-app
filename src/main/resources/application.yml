@@ -60,7 +60,7 @@ spring:
         gemini:
           project-id: ${VERTEX_AI_PROJECT_ID}
           location: ${VERTEX_AI_LOCATION:us-central1}
-          credentials-uri: ${VERTEX_AI_CREDENTIALS_URI:classpath:study-app-472920-1182c7a4b7dd.json}
+          credentials-uri: ${VERTEX_AI_CREDENTIALS_URI}
           transport: rest
           connection-timeout: 60s
           read-timeout: 60s

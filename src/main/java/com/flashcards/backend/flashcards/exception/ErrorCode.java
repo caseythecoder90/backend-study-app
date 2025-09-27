@@ -48,6 +48,8 @@ public enum ErrorCode {
     CONFIG_MISSING_PROJECT_ID("CFG_002", "Project ID is required but not configured"),
     CONFIG_INVALID_PROVIDER("CFG_003", "Invalid AI provider configuration"),
     CONFIG_PROVIDER_UNAVAILABLE("CFG_004", "AI provider is not available"),
+    CONFIG_CREDENTIALS_DECODE_ERROR("CFG_005", "Failed to decode credentials"),
+    CONFIG_CREDENTIALS_FILE_ERROR("CFG_006", "Failed to create credentials file"),
 
     // Operations Error Codes
     ENCRYPTION_ERROR("OPS_001", "Encryption failed"),

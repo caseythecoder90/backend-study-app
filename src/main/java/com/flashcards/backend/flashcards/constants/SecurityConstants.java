@@ -65,6 +65,20 @@ public class SecurityConstants {
     public static final String ENC_PREFIX = "ENC(";
     public static final String ENC_SUFFIX = ")";
 
+    // Google Credentials Configuration
+    public static final String GOOGLE_CREDENTIALS_ENV_VAR = "GOOGLE_CREDENTIALS_JSON";
+    public static final String VERTEX_AI_CREDENTIALS_URI_PROPERTY = "spring.ai.vertex.ai.gemini.credentials-uri";
+    public static final String TEMP_DIR_PREFIX = "gcp-credentials-";
+    public static final String GCP_CREDENTIALS_FILENAME = "gcp-credentials-%s.json";
+    public static final String GCP_CREDENTIALS_FILE_PREFIX = "file:";
+    public static final String GCP_CREDENTIALS_PROPERTY_SOURCE = "googleCredentials";
+    public static final String GCP_CREDENTIALS_INIT_SUCCESS = "Successfully initialized Google Cloud credentials from environment variable";
+    public static final String GCP_CREDENTIALS_ENV_NOT_FOUND = "Google credentials environment variable not found, using default configuration";
+    public static final String GCP_CREDENTIALS_DECODE_ERROR = "Failed to decode base64 Google credentials: %s";
+    public static final String GCP_CREDENTIALS_WRITE_ERROR = "Failed to write Google credentials to temporary file: %s";
+    public static final String GCP_CREDENTIALS_INVALID_BASE64 = "Invalid base64 encoding for Google credentials";
+    public static final String GCP_CREDENTIALS_FILE_CREATE_ERROR = "Unable to create temporary credentials file";
+
     private SecurityConstants() {
         // Private constructor to prevent instantiation
     }

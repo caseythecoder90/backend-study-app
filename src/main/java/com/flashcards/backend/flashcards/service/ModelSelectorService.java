@@ -56,7 +56,7 @@ public class ModelSelectorService {
      * @throws ServiceException if the model/provider is not supported or available
      */
     public ChatModel selectChatModel(AIModelEnum model) {
-        // Default to GPT-4O-MINI if model is null
+
         AIModelEnum selectedModel = nonNull(model) ? model : AIModelEnum.GPT_4O_MINI;
 
         validateModelForRequest(selectedModel);

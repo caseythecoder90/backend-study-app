@@ -31,7 +31,7 @@ spring:
         gemini:
           project-id: study-app-472920
           location: us-central1
-          credentials-uri: classpath:study-app-472920-1182c7a4b7dd.json
+          credentials-uri: ${VERTEX_AI_CREDENTIALS_URI}
           transport: rest
           connection-timeout: 60s
           read-timeout: 60s
@@ -93,11 +93,11 @@ jasypt:
     string-output-type: base64
 
 admin:
-  email: caseythecoder90@gmail.com
-  username: casquinn_admin
-  password: ENC(nX2JvzJTNlexIyCxdAP8HHY00HYTPr+KcBKDtj7G80HX3EzmXgHwIRgN8OEs3knZ)
-  first-name: Casey
-  last-name: Quinn
+  email: ${ADMIN_EMAIL}
+  username: ${ADMIN_USERNAME}
+  password: ${ADMIN_PASSWORD}
+  first-name: ${ADMIN_FIRST_NAME}
+  last-name: ${ADMIN_LAST_NAME}
 
 ai:
   limits:
@@ -108,7 +108,7 @@ ai:
     enabled: true
     ttl: 3600
   fallback:
-    enabled: false
+    enabled: true
     max-retries: 2
     fallback-models:
       - GPT_4O_MINI

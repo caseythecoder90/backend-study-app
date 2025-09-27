@@ -8,6 +8,7 @@ import com.flashcards.backend.flashcards.model.User;
 import com.flashcards.backend.flashcards.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Component;
@@ -44,7 +45,7 @@ public class UserDaoImpl implements UserDao {
     public Optional<User> findById(String id) {
         return executeWithExceptionHandling(() ->
                 Optional.ofNullable(id)
-                        .filter(str -> isNotBlank(str))
+                        .filter(StringUtils::isNotBlank)
                         .flatMap(userRepository::findById),
                 ErrorCode.DAO_FIND_ERROR,
                 DAO_FIND_BY_ID_ERROR.formatted(ENTITY_USER, id)
@@ -55,7 +56,7 @@ public class UserDaoImpl implements UserDao {
     public Optional<User> findByUsername(String username) {
         return executeWithExceptionHandling(() ->
                 Optional.ofNullable(username)
-                        .filter(str -> isNotBlank(str))
+                        .filter(StringUtils::isNotBlank)
                         .flatMap(userRepository::findByUsername),
                 ErrorCode.DAO_FIND_ERROR,
                 DAO_FIND_BY_FIELD_ERROR.formatted(ENTITY_USER, "username", username)
@@ -66,7 +67,7 @@ public class UserDaoImpl implements UserDao {
     public Optional<User> findByEmail(String email) {
         return executeWithExceptionHandling(() ->
                 Optional.ofNullable(email)
-                        .filter(str -> isNotBlank(str))
+                        .filter(StringUtils::isNotBlank)
                         .flatMap(userRepository::findByEmail),
                 ErrorCode.DAO_FIND_ERROR,
                 DAO_FIND_BY_FIELD_ERROR.formatted(ENTITY_USER, "email", email)
@@ -121,7 +122,7 @@ public class UserDaoImpl implements UserDao {
     public void deleteById(String id) {
         executeWithExceptionHandling(() -> {
             Optional.ofNullable(id)
-                    .filter(str -> isNotBlank(str))
+                    .filter(StringUtils::isNotBlank)
                     .ifPresent(userRepository::deleteById);
             return null;
         }, ErrorCode.DAO_DELETE_ERROR, DAO_DELETE_ERROR.formatted(ENTITY_USER, id));
@@ -131,7 +132,7 @@ public class UserDaoImpl implements UserDao {
     public boolean existsByUsername(String username) {
         return executeWithExceptionHandling(() ->
                 Optional.ofNullable(username)
-                        .filter(str -> isNotBlank(str))
+                        .filter(StringUtils::isNotBlank)
                         .map(userRepository::existsByUsername)
                         .orElse(false),
                 ErrorCode.DAO_FIND_ERROR,
@@ -143,7 +144,7 @@ public class UserDaoImpl implements UserDao {
     public boolean existsByEmail(String email) {
         return executeWithExceptionHandling(() ->
                 Optional.ofNullable(email)
-                        .filter(str -> isNotBlank(str))
+                        .filter(StringUtils::isNotBlank)
                         .map(userRepository::existsByEmail)
                         .orElse(false),
                 ErrorCode.DAO_FIND_ERROR,
@@ -155,9 +156,9 @@ public class UserDaoImpl implements UserDao {
     public Optional<User> findByOauthProviderAndOauthId(String oauthProvider, String oauthId) {
         return executeWithExceptionHandling(() ->
                 Optional.ofNullable(oauthProvider)
-                        .filter(str -> isNotBlank(str))
+                        .filter(StringUtils::isNotBlank)
                         .flatMap(provider -> Optional.ofNullable(oauthId)
-                                .filter(str -> isNotBlank(str))
+                                .filter(StringUtils::isNotBlank)
                                 .flatMap(id -> userRepository.findByOauthProviderAndOauthId(provider, id))),
                 ErrorCode.DAO_FIND_ERROR,
                 DAO_FIND_BY_FIELD_ERROR.formatted(ENTITY_USER, "oauthProvider and oauthId", oauthProvider + ":" + oauthId)
