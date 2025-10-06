@@ -72,7 +72,7 @@ Feature: Multi-Model AI Provider Configuration
     When I request flashcard generation with:
       | text  | Machine learning algorithms learn from data |
       | model | CLAUDE_SONNET_4                            |
-      | count | 5                                          |
+    | count | 5                                          |
     Then the request should succeed
     And 5 flashcards should be generated
     And the AI provider used should be "ANTHROPIC"

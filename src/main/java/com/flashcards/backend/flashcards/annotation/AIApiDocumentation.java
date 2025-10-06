@@ -1,6 +1,8 @@
 package com.flashcards.backend.flashcards.annotation;
 
 import com.flashcards.backend.flashcards.dto.AIGenerateRequestDto;
+import com.flashcards.backend.flashcards.dto.AISummaryResponseDto;
+import com.flashcards.backend.flashcards.dto.CreateFlashcardDto;
 import com.flashcards.backend.flashcards.dto.ErrorResponse;
 import com.flashcards.backend.flashcards.dto.FlashcardDto;
 import io.swagger.v3.oas.annotations.Operation;
@@ -215,4 +217,186 @@ public @interface AIApiDocumentation {
             )
     })
     @interface GenerateFlashcardsFromText {}
+
+    @Target(ElementType.METHOD)
+    @Retention(RetentionPolicy.RUNTIME)
+    @Operation(
+            summary = "Generate flashcards from image using AI vision",
+            description = "Uses AI vision models to analyze image content (diagrams, code screenshots, notes) and generate educational flashcards. " +
+                    "Supports GPT-4o, GPT-4 Turbo, and Gemini models with vision capabilities.",
+            tags = {"AI Operations"}
+    )
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Successfully generated flashcards from image",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(
+                                    type = "array",
+                                    implementation = FlashcardDto.class
+                            )
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Invalid image or request parameters",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorResponse.class)
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "Authentication required",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorResponse.class)
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "500",
+                    description = "AI vision service error",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorResponse.class)
+                    )
+            )
+    })
+    @interface GenerateFlashcardsFromImage {}
+
+    @Target(ElementType.METHOD)
+    @Retention(RetentionPolicy.RUNTIME)
+    @Operation(
+            summary = "Generate educational image from text description using DALL-E",
+            description = "Uses DALL-E to generate educational diagrams, flowcharts, and illustrations from text descriptions. " +
+                    "Perfect for creating visual learning aids and concept diagrams.",
+            tags = {"AI Operations"}
+    )
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Successfully generated image",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = com.flashcards.backend.flashcards.dto.AITextToImageResponseDto.class)
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Invalid description or parameters",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorResponse.class)
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "Authentication required",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorResponse.class)
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "500",
+                    description = "Image generation service error",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorResponse.class)
+                    )
+            )
+    })
+    @interface GenerateImageFromText {}
+
+    @Target(ElementType.METHOD)
+    @Retention(RetentionPolicy.RUNTIME)
+    @Operation(
+            summary = "Generate flashcards from a prompt using AI",
+            description = "Creates flashcards based solely on a text prompt without requiring source text or images. " +
+                    "AI generates comprehensive content based on the specified topic and requirements.",
+            tags = {"AI Operations"}
+    )
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Successfully generated flashcards from prompt",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(
+                                    type = "array",
+                                    implementation = CreateFlashcardDto.class
+                            )
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Invalid prompt or request parameters",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorResponse.class)
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "Authentication required",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorResponse.class)
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "500",
+                    description = "AI service error",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorResponse.class)
+                    )
+            )
+    })
+    @interface GenerateFlashcardsFromPrompt {}
+
+    @Target(ElementType.METHOD)
+    @Retention(RetentionPolicy.RUNTIME)
+    @Operation(
+            summary = "Generate summary from content using AI",
+            description = "Creates summaries from various sources: text, deck, flashcards, or prompts. " +
+                    "Supports multiple formats (paragraph, bullet points, numbered list, outline, markdown) and lengths.",
+            tags = {"AI Operations"}
+    )
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Successfully generated summary",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = AISummaryResponseDto.class)
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "400",
+                    description = "Invalid request parameters",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorResponse.class)
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "401",
+                    description = "Authentication required",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorResponse.class)
+                    )
+            ),
+            @ApiResponse(
+                    responseCode = "500",
+                    description = "AI service error",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = ErrorResponse.class)
+                    )
+            )
+    })
+    @interface GenerateSummary {}
 }

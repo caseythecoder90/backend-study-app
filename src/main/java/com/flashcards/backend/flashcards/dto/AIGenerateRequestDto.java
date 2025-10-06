@@ -1,6 +1,7 @@
 package com.flashcards.backend.flashcards.dto;
 
 import com.flashcards.backend.flashcards.enums.AIModelEnum;
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
@@ -35,5 +36,9 @@ public class AIGenerateRequestDto {
     @Size(max = 50, message = "Category must not exceed 50 characters")
     private String category;
 
+    @Schema(description = "AI model to use for generation. Use enum constant name.",
+            type = "string",
+            example = "GPT_4O_MINI",
+            allowableValues = {"GPT_4O_MINI", "GPT_4O", "CLAUDE_3_5_SONNET", "CLAUDE_SONNET_4", "GEMINI_2_0_FLASH_EXP", "GEMINI_2_5_FLASH"})
     private AIModelEnum model;
 }

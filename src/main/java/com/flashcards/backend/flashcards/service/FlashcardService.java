@@ -2,7 +2,6 @@ package com.flashcards.backend.flashcards.service;
 
 import com.flashcards.backend.flashcards.dao.DeckDao;
 import com.flashcards.backend.flashcards.dao.FlashcardDao;
-import com.flashcards.backend.flashcards.dto.AIGenerateRequestDto;
 import com.flashcards.backend.flashcards.dto.CreateFlashcardDto;
 import com.flashcards.backend.flashcards.dto.FlashcardDto;
 import com.flashcards.backend.flashcards.exception.DaoException;
@@ -39,7 +38,6 @@ public class FlashcardService {
     private final FlashcardDao flashcardDao;
     private final DeckDao deckDao;
     private final FlashcardMapper flashcardMapper;
-    private final AIService aiService;
 
     @Transactional(readOnly = true)
     public Optional<FlashcardDto> findById(String id) {
@@ -215,24 +213,6 @@ public class FlashcardService {
                 () -> SERVICE_OPERATION_FAILED.formatted("count all", "flashcards"));
     }
 
-    public List<FlashcardDto> generateFlashcardsFromText(AIGenerateRequestDto request) {
-        return executeWithExceptionHandling(() -> {
-            validateAIGenerateRequest(request);
-            validateDeckExists(request.getDeckId());
-
-            // Generate flashcards using AI service
-            List<CreateFlashcardDto> generatedFlashcards = aiService.generateFlashcardsFromText(request);
-
-            if (isEmpty(generatedFlashcards)) {
-                log.warn("AI service returned no flashcards for request: {}", request);
-                return Collections.emptyList();
-            }
-
-            // Create the flashcards using the existing bulk creation method
-            return createMultipleFlashcards(generatedFlashcards);
-        }, () -> SERVICE_OPERATION_FAILED.formatted("generate from AI", ENTITY_FLASHCARD));
-    }
-
     private void validateId(String id) {
         if (isBlank(id)) {
             throw new ServiceException(
@@ -287,31 +267,6 @@ public class FlashcardService {
 
     private void validateFlashcardDto(FlashcardDto flashcardDto) {
         requireNonNull(flashcardDto, ENTITY_FLASHCARD + " data cannot be null");
-    }
-
-    private void validateAIGenerateRequest(AIGenerateRequestDto request) {
-        requireNonNull(request, "AI generate request cannot be null");
-
-        if (isBlank(request.getDeckId())) {
-            throw new ServiceException(
-                    SERVICE_VALIDATION_FAILED.formatted("AI request", "Deck ID is required"),
-                    ErrorCode.SERVICE_VALIDATION_ERROR
-            );
-        }
-
-        if (isBlank(request.getText())) {
-            throw new ServiceException(
-                    SERVICE_VALIDATION_FAILED.formatted("AI request", "Text content is required"),
-                    ErrorCode.SERVICE_VALIDATION_ERROR
-            );
-        }
-
-        if (request.getCount() <= 0) {
-            throw new ServiceException(
-                    SERVICE_VALIDATION_FAILED.formatted("AI request", "Count must be positive"),
-                    ErrorCode.SERVICE_VALIDATION_ERROR
-            );
-        }
     }
 
     private void validateDeckExists(String deckId) {

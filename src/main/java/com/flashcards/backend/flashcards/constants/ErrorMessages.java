@@ -92,6 +92,19 @@ public class ErrorMessages {
     public static final String AI_TEXT_CONTENT_REQUIRED = "Text content is required for AI generation";
     public static final String AI_TEXT_LENGTH_EXCEEDED = "Text content exceeds maximum allowed length of %s";
     public static final String AI_FLASHCARD_COUNT_EXCEEDED = "Flashcard count exceeds maximum allowed of %s";
+    public static final String AI_IMAGE_DATA_NULL = "Image data cannot be null";
+    public static final String AI_IMAGE_MIME_TYPE_NULL = "Image MIME type cannot be null";
+    public static final String AI_IMAGE_MIME_TYPE_INVALID = "Invalid image MIME type: %s";
+    public static final String AI_PROMPT_NULL = "Prompt cannot be null";
+    public static final String AI_PROMPT_REQUEST_NULL = "Prompt generation request cannot be null";
+    public static final String AI_SUMMARY_REQUEST_NULL = "Summary request cannot be null";
+    public static final String AI_SOURCE_TYPE_NULL = "Source type cannot be null";
+    public static final String AI_SUMMARY_FORMAT_NULL = "Format cannot be null";
+    public static final String AI_SUMMARY_LENGTH_NULL = "Length cannot be null";
+    public static final String AI_TEXT_NULL_FOR_TEXT_SOURCE = "Text content cannot be null for TEXT source type";
+    public static final String AI_DECK_ID_NULL_FOR_DECK_SOURCE = "Deck ID cannot be null for DECK source type";
+    public static final String AI_FLASHCARD_IDS_NULL_FOR_FLASHCARDS_SOURCE = "Flashcard IDs cannot be null for FLASHCARDS source type";
+    public static final String AI_PROMPT_NULL_FOR_PROMPT_SOURCE = "Prompt cannot be null for PROMPT source type";
     public static final String AI_RESPONSE_PARSE_FAILED = "Failed to parse AI-generated flashcard response";
     public static final String AI_FLASHCARD_MAP_CONVERSION_FAILED = "Failed to convert flashcard map to DTO";
     public static final String AI_CODE_BLOCK_PARSE_FAILED = "Failed to parse code block";
@@ -113,6 +126,7 @@ public class ErrorMessages {
     public static final String AI_FALLBACK_SUCCESS = "Successfully generated flashcards using fallback model: %s";
     public static final String AI_FLASHCARDS_INCOMPLETE = "AI generated %s flashcards but %s were requested. Some flashcards may be invalid or incomplete.";
     public static final String AI_FLASHCARDS_PARSED = "Successfully parsed %s flashcards from AI response (requested: %s)";
+    public static final String AI_VISION_NOT_SUPPORTED = "Model %s does not support vision operations";
 
     // AI Error Detection Keywords
     public static final String AI_ERROR_RATE_LIMIT = "rate limit";
@@ -131,7 +145,9 @@ public class ErrorMessages {
     public static final String CONFIG_PROJECT_ID_MISSING = "%s project ID is required but not configured";
     public static final String CONFIG_PROVIDER_INVALID = "Invalid AI provider configuration for %s";
     public static final String CONFIG_PROVIDER_UNAVAILABLE = "AI provider %s is not available";
-
+    public static final String AI_IMAGE_REQUEST_INVALID_MIME = "Image MIME type must be one of: %s";
+    public static final String AI_IMAGE_SIZE_ERROR = "Image size cannot exceed %s MB";
+    public static final String AI_IMAGE_PROCESSING_FAILED = "Failed to process uploaded image";
     // Data Initialization Error Messages
     public static final String INIT_ADMIN_CREATION_FAILED = "Failed to initialize admin user";
     public static final String INIT_ADMIN_UPGRADE_FAILED = "Failed to upgrade user %s to admin role";

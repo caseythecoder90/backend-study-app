@@ -19,6 +19,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.util.Random;
+
 import static com.flashcards.backend.flashcards.constants.AuthConstants.QR_CODE_DATA_URI_PREFIX;
 import static com.flashcards.backend.flashcards.constants.AuthConstants.TOTP_CODE_LENGTH;
 import static com.flashcards.backend.flashcards.constants.AuthConstants.TOTP_TIME_STEP_SECONDS;
@@ -53,6 +55,16 @@ public class TotpService {
         String secret = secretGenerator.generate();
         log.debug("Generated new TOTP secret");
         return secret;
+    }
+
+    public void doSomething() {
+        int num = new Random().nextInt(0, 5000);
+        switch(num) {
+            case 1 -> System.out.println();                    // Returns String (ignored)
+            case 2 -> System.out.println();                     // Returns int (ignored);
+            case 3 -> System.out.println("3");  // Returns void
+            default -> doSomething();           // Any return type
+        };
     }
 
     public String generateQrCodeImageUri(String secret, String username) {

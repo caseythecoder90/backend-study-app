@@ -18,6 +18,7 @@ public class AIConfigProperties {
         private int maxFlashcardsPerRequest = 20;
         private int maxTextLength = 10000;
         private int rateLimitPerMinute = 10;
+        private int maxImageSizeKb = 4096; // 4MB max image size
     }
 
     @Data

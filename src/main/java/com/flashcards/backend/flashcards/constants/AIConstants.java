@@ -11,6 +11,8 @@ public class AIConstants {
     public static final String MODEL_GPT_4O_MINI = "gpt-4o-mini";
     public static final String MODEL_O1_PREVIEW = "o1-preview";
     public static final String MODEL_GPT_35_TURBO = "gpt-3.5-turbo";
+    public static final String MODEL_GPT_5 = "gpt-5";
+    public static final String MODEL_GPT_5_MINI = "gpt-5-mini";
     public static final String MODEL_GPT_5_NANO = "gpt-5-nano";
 
     // Anthropic Claude Model Names
@@ -89,6 +91,8 @@ public class AIConstants {
     public static final String DISPLAY_GPT_4 = "GPT-4";
     public static final String DISPLAY_O1_PREVIEW = "O1 Preview";
     public static final String DISPLAY_GPT_35_TURBO = "GPT-3.5 Turbo";
+    public static final String DISPLAY_GPT_5 = "GPT-5";
+    public static final String DISPLAY_GPT_5_MINI = "GPT-5 Mini";
     public static final String DISPLAY_GPT_5_NANO = "GPT-5 Nano";
     public static final String DISPLAY_CLAUDE_SONNET_4 = "Claude Sonnet 4";
     public static final String DISPLAY_CLAUDE_OPUS_4_1 = "Claude Opus 4.1";
@@ -181,7 +185,7 @@ public class AIConstants {
     public static final double COST_GPT_4 = 0.03;
     public static final double COST_O1_PREVIEW = 0.015;
     public static final double COST_GPT_35_TURBO = 0.001;
-      public static final double COST_GPT_5_NANO = 0.00005;
+    public static final double COST_GPT_5_NANO = 0.00005;
     public static final double COST_CLAUDE_SONNET_4 = 0.003;
     public static final double COST_CLAUDE_OPUS_4_1 = 0.015;
     public static final double COST_CLAUDE_35_SONNET = 0.003;
@@ -196,48 +200,11 @@ public class AIConstants {
     public static final double COST_GEMINI_20_FLASH = 0.0002;
     public static final double COST_GEMINI_25_FLASH = 0.0003;
 
-    // Flashcard Recommendations
-    public static final boolean RECOMMENDED_GPT_4O = false;
-    public static final boolean RECOMMENDED_GPT_4O_MINI = true;
-    public static final boolean RECOMMENDED_GPT_4_1 = false;
-    public static final boolean RECOMMENDED_GPT_4_TURBO = false;
-    public static final boolean RECOMMENDED_GPT_4 = false;
-    public static final boolean RECOMMENDED_O1_PREVIEW = false;
-    public static final boolean RECOMMENDED_GPT_35_TURBO = false;
-    public static final boolean RECOMMENDED_GPT_5_NANO = true;
-    public static final boolean RECOMMENDED_CLAUDE_SONNET_4 = true;
-    public static final boolean RECOMMENDED_CLAUDE_OPUS_4_1 = false;
-    public static final boolean RECOMMENDED_CLAUDE_35_SONNET = true;
-    public static final boolean RECOMMENDED_CLAUDE_35_HAIKU = true;
-    public static final boolean RECOMMENDED_CLAUDE_3_OPUS = false;
-    public static final boolean RECOMMENDED_CLAUDE_3_SONNET = false;
-    public static final boolean RECOMMENDED_CLAUDE_3_HAIKU = true;
-    public static final boolean RECOMMENDED_GEMINI_PRO = false;
-    public static final boolean RECOMMENDED_GEMINI_PRO_VISION = false;
-    public static final boolean RECOMMENDED_GEMINI_15_PRO = false;
-    public static final boolean RECOMMENDED_GEMINI_15_FLASH = false;
-    public static final boolean RECOMMENDED_GEMINI_20_FLASH = true;
-    public static final boolean RECOMMENDED_GEMINI_25_FLASH = true;
-
     // Token Estimation
     public static final int CHARS_PER_TOKEN_ESTIMATE = 4;
 
     // Prompts
-    public static final String FLASHCARD_GENERATION_TEMPLATE = """
-            Generate exactly {count} flashcards from the following text content:
-
-            {text}
-
-            Requirements:
-            - Create educational flashcards that focus on key concepts
-            - Each flashcard should have distinct front and back content
-            - Front should be a question or prompt
-            - Back should be a clear, concise answer
-            - Include code examples where relevant
-            - Vary difficulty levels appropriately
-            - Generate relevant tags for categorization
-            - IMPORTANT: You must generate exactly {count} complete flashcards. DO NOT PRODUCE MORE FLASHCARDS THEN YOU ARE ASKED FOR.
-
+    public static final String FLASHCARD_JSON_SCHEMA = """
             Return ONLY a valid JSON array with this exact structure (no additional text, no markdown, no explanations):
             [
               {{
@@ -269,6 +236,157 @@ public class AIConstants {
 
             CRITICAL: Ensure the JSON is complete and properly closed with all required braces and brackets.
             """;
+
+    public static final String FLASHCARD_GENERATION_TEMPLATE = """
+            Generate exactly {count} flashcards from the following text content:
+
+            {text}
+
+            Requirements:
+            - Create educational flashcards that focus on key concepts
+            - Each flashcard should have distinct front and back content
+            - Front should be a question or prompt
+            - Back should be a clear, concise answer
+            - Include code examples where relevant
+            - Vary difficulty levels appropriately
+            - Generate relevant tags for categorization
+            - IMPORTANT: You must generate exactly {count} complete flashcards. DO NOT PRODUCE MORE FLASHCARDS THEN YOU ARE ASKED FOR.
+
+            """ + FLASHCARD_JSON_SCHEMA;
+
+    public static final String IMAGE_FLASHCARD_GENERATION_TEMPLATE = """
+            Analyze the provided image and generate exactly {count} flashcards based on its content.
+
+            Additional context: {prompt}
+
+            Requirements:
+            - Create educational flashcards that extract key concepts from the image
+            - Focus on text, code, diagrams, formulas, or any educational content visible
+            - Each flashcard should test understanding of different aspects shown
+            - If the image contains code, create flashcards about the code patterns, syntax, or logic
+            - If the image contains diagrams, create flashcards about relationships and concepts
+            - Include code examples where relevant
+            - Generate relevant tags based on the content
+
+            """ + FLASHCARD_JSON_SCHEMA;
+
+    public static final String PROMPT_FLASHCARD_GENERATION_TEMPLATE = """
+            Generate exactly {count} educational flashcards based on the following request:
+
+            {prompt}
+
+            Topic area: {topic}
+
+            Requirements:
+            - Create comprehensive flashcards that cover the requested subject matter
+            - Ensure factual accuracy and educational value
+            - Include a mix of conceptual questions and practical applications
+            - Add code examples where appropriate for programming topics
+            - Vary the difficulty levels appropriately
+            - Generate relevant tags for categorization
+
+            """ + FLASHCARD_JSON_SCHEMA;
+
+    public static final String SUMMARY_GENERATION_TEMPLATE = """
+            Generate a {length} summary in {format} format based on the following content:
+
+            {content}
+
+            Additional requirements: {prompt}
+
+            Guidelines:
+            - Focus on the most important concepts and key takeaways
+            - Maintain logical flow and coherence
+            - Use clear and concise language
+            - Preserve technical accuracy for code and technical topics
+            - Target approximately {wordCount} words
+
+            Return only the summary text in the requested format, without any additional commentary.
+            """;
+
+    // Summary word count targets
+    public static final int SUMMARY_SHORT_WORDS = 100;
+    public static final int SUMMARY_MEDIUM_WORDS = 250;
+    public static final int SUMMARY_LONG_WORDS = 500;
+    public static final int SUMMARY_DETAILED_WORDS = 1000;
+
+    // OpenAI Audio Models - Text-to-Speech
+    public static final String MODEL_TTS_1 = "tts-1";
+    public static final String MODEL_TTS_1_HD = "tts-1-hd";
+    public static final String DEFAULT_TTS_MODEL = MODEL_TTS_1;
+
+    // OpenAI Audio Models - Speech-to-Text
+    public static final String MODEL_WHISPER_1 = "whisper-1";
+    public static final String DEFAULT_STT_MODEL = MODEL_WHISPER_1;
+
+    // TTS Voice Options
+    public static final String VOICE_ALLOY = "alloy";
+    public static final String VOICE_ECHO = "echo";
+    public static final String VOICE_FABLE = "fable";
+    public static final String VOICE_ONYX = "onyx";
+    public static final String VOICE_NOVA = "nova";
+    public static final String VOICE_SHIMMER = "shimmer";
+    public static final String DEFAULT_VOICE = VOICE_ALLOY;
+
+    // TTS Voice Descriptions
+    public static final String VOICE_DESC_ALLOY = "Neutral and balanced";
+    public static final String VOICE_DESC_ECHO = "Male, clear and articulate";
+    public static final String VOICE_DESC_FABLE = "British accent, expressive";
+    public static final String VOICE_DESC_ONYX = "Deep and authoritative";
+    public static final String VOICE_DESC_NOVA = "Female, warm and friendly";
+    public static final String VOICE_DESC_SHIMMER = "Female, soft and gentle";
+
+    // Audio Output Types
+    public static final String AUDIO_OUTPUT_RECITATION = "RECITATION";
+    public static final String AUDIO_OUTPUT_SUMMARY = "SUMMARY";
+
+    // Audio Format Options
+    public static final String AUDIO_FORMAT_MP3 = "mp3";
+    public static final String AUDIO_FORMAT_OPUS = "opus";
+    public static final String AUDIO_FORMAT_AAC = "aac";
+    public static final String AUDIO_FORMAT_FLAC = "flac";
+    public static final String DEFAULT_AUDIO_FORMAT = AUDIO_FORMAT_MP3;
+
+    // TTS Speed Range (0.25 to 4.0)
+    public static final double TTS_SPEED_MIN = 0.25;
+    public static final double TTS_SPEED_MAX = 4.0;
+    public static final double TTS_SPEED_DEFAULT = 1.0;
+
+    // Audio Processing Limits
+    public static final int MAX_AUDIO_TEXT_LENGTH = 4096;
+    public static final int MAX_AUDIO_FILE_SIZE_MB = 25;
+
+    // Audio Summarization Template
+    public static final String AUDIO_SUMMARY_TEMPLATE = """
+            Create a clear, concise audio-friendly summary of the following content.
+            The summary should be natural when read aloud and suitable for listening.
+
+            Content:
+            {text}
+
+            Requirements:
+            - Use simple, clear language appropriate for audio
+            - Avoid complex sentence structures
+            - Focus on main points and key takeaways
+            - Keep it engaging for listeners
+            - Target length: {wordCount} words
+
+            Return only the summary text, without any additional commentary.
+            """;
+
+    // Transcription Options
+    public static final String TRANSCRIPTION_LANGUAGE_AUTO = "auto";
+    public static final String TRANSCRIPTION_LANGUAGE_EN = "en";
+    public static final String TRANSCRIPTION_LANGUAGE_ES = "es";
+    public static final String TRANSCRIPTION_LANGUAGE_FR = "fr";
+    public static final String TRANSCRIPTION_LANGUAGE_DE = "de";
+
+    // STT Response Format Options
+    public static final String STT_RESPONSE_FORMAT_JSON = "json";
+    public static final String STT_RESPONSE_FORMAT_TEXT = "text";
+    public static final String STT_RESPONSE_FORMAT_SRT = "srt";
+    public static final String STT_RESPONSE_FORMAT_VTT = "vtt";
+    public static final String DEFAULT_STT_RESPONSE_FORMAT = STT_RESPONSE_FORMAT_JSON;
 
 
     private AIConstants() {
