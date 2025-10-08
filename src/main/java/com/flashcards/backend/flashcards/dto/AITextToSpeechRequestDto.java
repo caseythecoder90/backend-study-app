@@ -25,7 +25,7 @@ public class AITextToSpeechRequestDto {
     private String userId;
 
     @NotBlank(message = "Text is required")
-    @Size(max = 4096, message = "Text must not exceed 4096 characters")
+    @Size(max = 10000, message = "Text must not exceed 10000 characters")
     @Schema(description = "Text content to convert to speech", example = "This is the content I want to listen to")
     private String text;
 
