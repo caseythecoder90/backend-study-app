@@ -41,5 +41,4 @@ public class UserDto {
     @Schema(description = "Last update timestamp", example = "2024-01-15T10:30:00.000Z")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
     private LocalDateTime updatedAt;
-    // Note: password is intentionally excluded from DTOs for security
 }

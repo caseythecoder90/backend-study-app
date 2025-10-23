@@ -75,5 +75,12 @@ public class AuthConstants {
     // OAuth Username Generation
     public static final String OAUTH_USERNAME_FALLBACK_PREFIX = "user";
 
+    // Field Names (for validation messages)
+    public static final String FIELD_USERNAME = "username";
+    public static final String FIELD_EMAIL = "email";
+    public static final String FIELD_PASSWORD = "password";
+    public static final String FIELD_USERS = "users";
+    public static final String FIELD_ROLE = "role";
+
     private AuthConstants() {}
 }

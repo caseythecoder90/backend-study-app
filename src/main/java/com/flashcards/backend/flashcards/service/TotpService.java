@@ -19,6 +19,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.util.Base64;
 import java.util.Random;
 
 import static com.flashcards.backend.flashcards.constants.AuthConstants.QR_CODE_DATA_URI_PREFIX;
@@ -53,18 +54,8 @@ public class TotpService {
 
     public String generateSecret() {
         String secret = secretGenerator.generate();
-        log.debug("Generated new TOTP secret");
+        log.info("Generated new TOTP secret");
         return secret;
-    }
-
-    public void doSomething() {
-        int num = new Random().nextInt(0, 5000);
-        switch(num) {
-            case 1 -> System.out.println();                    // Returns String (ignored)
-            case 2 -> System.out.println();                     // Returns int (ignored);
-            case 3 -> System.out.println("3");  // Returns void
-            default -> doSomething();           // Any return type
-        };
     }
 
     public String generateQrCodeImageUri(String secret, String username) {
@@ -77,10 +68,10 @@ public class TotpService {
 
             try {
                 byte[] qrCodeImage = qrGenerator.generate(data);
-                String base64Image = java.util.Base64.getEncoder().encodeToString(qrCodeImage);
+                String base64Image = Base64.getEncoder().encodeToString(qrCodeImage);
                 String dataUri = QR_CODE_DATA_URI_PREFIX + base64Image;
 
-                log.debug("Generated QR code for user: {}", username);
+                log.info("Generated QR code for user: {}", username);
                 return dataUri;
             } catch (Exception e) {
                 log.error("Failed to generate QR code for user: {} - {}", username, e.getMessage());
@@ -97,7 +88,7 @@ public class TotpService {
     public boolean verifyCode(String secret, String code) {
         if (isNotBlank(secret) && isNotBlank(code)) {
             boolean isValid = codeVerifier.isValidCode(secret, code);
-            log.debug("TOTP code verification result: {}", isValid);
+            log.info("TOTP code verification result: {}", isValid);
             return isValid;
         }
         log.warn(AUTH_TOTP_VERIFICATION_FAILED);

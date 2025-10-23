@@ -2,6 +2,7 @@ package com.flashcards.backend.flashcards.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import java.security.SecureRandom;
@@ -32,13 +33,13 @@ public class RecoveryCodeService {
     private final SecureRandom secureRandom = new SecureRandom();
 
     public List<String> generateRecoveryCodes() {
-        log.debug("Generating {} recovery codes", RECOVERY_CODE_COUNT);
+        log.info("Generating {} recovery codes", RECOVERY_CODE_COUNT);
 
         List<String> codes = IntStream.range(0, RECOVERY_CODE_COUNT)
                 .mapToObj(i -> generateSingleCode())
                 .collect(Collectors.toList());
 
-        log.debug("Generated {} recovery codes successfully", codes.size());
+        log.info("Generated {} recovery codes successfully", codes.size());
         return codes;
     }
 
@@ -49,7 +50,7 @@ public class RecoveryCodeService {
         }
 
         return codes.stream()
-                .filter(code -> isNotBlank(code))
+                .filter(StringUtils::isNotBlank)
                 .map(passwordService::encryptPassword)
                 .collect(Collectors.toList());
     }
@@ -92,7 +93,7 @@ public class RecoveryCodeService {
         }
 
         return codes.stream()
-                .filter(code -> isNotBlank(code))
+                .filter(StringUtils::isNotBlank)
                 .map(this::formatCodeWithDelimiter)
                 .collect(Collectors.toList());
     }

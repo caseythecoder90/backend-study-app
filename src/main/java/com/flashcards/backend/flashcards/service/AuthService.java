@@ -23,6 +23,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
+import static com.flashcards.backend.flashcards.constants.AuthConstants.FIELD_EMAIL;
+import static com.flashcards.backend.flashcards.constants.AuthConstants.FIELD_USERNAME;
 import static com.flashcards.backend.flashcards.constants.AuthConstants.RECOVERY_CODE_INSTRUCTIONS;
 import static com.flashcards.backend.flashcards.constants.AuthConstants.RECOVERY_CODE_LOW_WARNING;
 import static com.flashcards.backend.flashcards.constants.AuthConstants.RECOVERY_CODE_MIN_WARNING_THRESHOLD;
@@ -36,13 +38,15 @@ import static com.flashcards.backend.flashcards.constants.ErrorMessages.AUTH_REC
 import static com.flashcards.backend.flashcards.constants.ErrorMessages.AUTH_RECOVERY_CODES_NOT_ENABLED;
 import static com.flashcards.backend.flashcards.constants.ErrorMessages.AUTH_TOTP_CODE_REQUIRED;
 import static com.flashcards.backend.flashcards.constants.ErrorMessages.AUTH_USER_DISABLED;
+import static com.flashcards.backend.flashcards.constants.ErrorMessages.ENTITY_USER;
 import static com.flashcards.backend.flashcards.constants.ErrorMessages.SERVICE_DUPLICATE_EXISTS;
 import static com.flashcards.backend.flashcards.constants.JwtConstants.JWT_TOKEN_TYPE;
+import static com.flashcards.backend.flashcards.util.SecurityUtils.sanitizeForLog;
 import static java.util.Objects.nonNull;
-import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.apache.commons.lang3.BooleanUtils.isFalse;
 import static org.apache.commons.lang3.BooleanUtils.isTrue;
 import static org.apache.commons.lang3.StringUtils.isBlank;
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 @Slf4j
 @Service
@@ -56,8 +60,9 @@ public class AuthService {
     private final RecoveryCodeService recoveryCodeService;
 
     public AuthResponseDto register(CreateUserDto createUserDto) {
-        log.debug("Registering new user: {}", createUserDto.getUsername());
+        log.info("Registering new user: {}", sanitizeForLog(createUserDto.getUsername()));
 
+        normalizeEmail(createUserDto);
         validateUserDoesNotExist(createUserDto);
 
         User user = createNewUser(createUserDto);
@@ -66,12 +71,12 @@ public class AuthService {
         String accessToken = jwtService.generateToken(savedUser);
         UserDto userDto = userMapper.toDto(savedUser);
 
-        log.debug("User registered successfully: {}", savedUser.getUsername());
+        log.info("User registered successfully: {}", sanitizeForLog(savedUser.getUsername()));
         return buildAuthResponse(accessToken, userDto, savedUser.isTotpEnabled());
     }
 
     public AuthResponseDto login(LoginDto loginDto) {
-        log.debug("Authenticating user: {}", loginDto.getUsernameOrEmail());
+        log.info("Authenticating user: {}", sanitizeForLog(loginDto.getUsernameOrEmail()));
 
         User user = findUserByUsernameOrEmail(loginDto.getUsernameOrEmail());
         validateUserCredentials(user, loginDto);
@@ -88,19 +93,19 @@ public class AuthService {
         String accessToken = jwtService.generateToken(user);
         UserDto userDto = userMapper.toDto(user);
 
-        log.debug("User authenticated successfully: {}", user.getUsername());
+        log.info("User authenticated successfully: {}", sanitizeForLog(user.getUsername()));
         return buildAuthResponse(accessToken, userDto, user.isTotpEnabled());
     }
     private void validateUserDoesNotExist(CreateUserDto createUserDto) {
         if (isTrue(userDao.existsByUsername(createUserDto.getUsername()))) {
             throw new ServiceException(
-                    SERVICE_DUPLICATE_EXISTS.formatted("User", "username", createUserDto.getUsername()),
+                    SERVICE_DUPLICATE_EXISTS.formatted(ENTITY_USER, FIELD_USERNAME, createUserDto.getUsername()),
                     ErrorCode.SERVICE_DUPLICATE_ERROR
             );
         }
         if (isTrue(userDao.existsByEmail(createUserDto.getEmail()))) {
             throw new ServiceException(
-                    SERVICE_DUPLICATE_EXISTS.formatted("User", "email", createUserDto.getEmail()),
+                    SERVICE_DUPLICATE_EXISTS.formatted(ENTITY_USER, FIELD_EMAIL, createUserDto.getEmail()),
                     ErrorCode.SERVICE_DUPLICATE_ERROR
             );
         }
@@ -130,13 +135,20 @@ public class AuthService {
     private User findUserByUsernameOrEmail(String usernameOrEmail) {
         Optional<User> userOpt = userDao.findByUsername(usernameOrEmail);
         if (userOpt.isEmpty()) {
-            userOpt = userDao.findByEmail(usernameOrEmail);
+            String normalizedEmail = isNotBlank(usernameOrEmail) ? usernameOrEmail.toLowerCase().trim() : usernameOrEmail;
+            userOpt = userDao.findByEmail(normalizedEmail);
         }
 
         return userOpt.orElseThrow(() -> new ServiceException(
                 AUTH_CREDENTIALS_INVALID,
                 ErrorCode.AUTH_INVALID_CREDENTIALS
         ));
+    }
+
+    private void normalizeEmail(CreateUserDto createUserDto) {
+        if (isNotBlank(createUserDto.getEmail())) {
+            createUserDto.setEmail(createUserDto.getEmail().toLowerCase().trim());
+        }
     }
 
     private void validateUserCredentials(User user, LoginDto loginDto) {
@@ -154,9 +166,9 @@ public class AuthService {
     private void validateTotpCode(User user, String totpCode) {
         if (isNotBlank(user.getTotpSecret())) {
             totpService.validateTotpCode(user.getTotpSecret(), totpCode);
-            log.debug("TOTP validation successful for user: {}", user.getUsername());
+            log.debug("TOTP validation successful for user: {}", sanitizeForLog(user.getUsername()));
         } else {
-            log.warn("TOTP validation attempted but no secret found for user: {}", user.getUsername());
+            log.warn("TOTP validation attempted but no secret found for user: {}", sanitizeForLog(user.getUsername()));
             throw new ServiceException(AUTH_CREDENTIALS_INVALID, ErrorCode.AUTH_INVALID_CREDENTIALS);
         }
     }
@@ -167,7 +179,7 @@ public class AuthService {
     }
 
     public TotpSetupDto setupTotp(String userId) {
-        log.debug("Setting up TOTP for user: {}", userId);
+        log.info("Setting up TOTP for user: {}", sanitizeForLog(userId));
 
         User user = userDao.findById(userId)
                 .orElseThrow(() -> new ServiceException(AUTH_CREDENTIALS_INVALID, ErrorCode.AUTH_INVALID_CREDENTIALS));
@@ -194,7 +206,7 @@ public class AuthService {
         user.setUpdatedAt(now);
         userDao.save(user);
 
-        log.debug("TOTP setup completed for user: {} with {} recovery codes", userId, recoveryCodes.size());
+        log.info("TOTP setup completed for user: {} with {} recovery codes", sanitizeForLog(userId), recoveryCodes.size());
         return TotpSetupDto.builder()
                 .secret(secret)
                 .qrCodeDataUri(qrCodeDataUri)
@@ -205,7 +217,7 @@ public class AuthService {
     }
 
     public AuthResponseDto enableTotp(String userId, String totpCode) {
-        log.debug("Enabling TOTP for user: {}", userId);
+        log.info("Enabling TOTP for user: {}", sanitizeForLog(userId));
 
         User user = userDao.findById(userId)
                 .orElseThrow(() -> new ServiceException(AUTH_CREDENTIALS_INVALID, ErrorCode.AUTH_INVALID_CREDENTIALS));
@@ -233,12 +245,12 @@ public class AuthService {
         String accessToken = jwtService.generateToken(savedUser);
         UserDto userDto = userMapper.toDto(savedUser);
 
-        log.debug("TOTP enabled successfully for user: {}", userId);
+        log.info("TOTP enabled successfully for user: {}", sanitizeForLog(userId));
         return buildAuthResponse(accessToken, userDto, true);
     }
 
     public AuthResponseDto disableTotp(String userId) {
-        log.debug("Disabling TOTP for user: {}", userId);
+        log.debug("Disabling TOTP for user: {}", sanitizeForLog(userId));
 
         User user = userDao.findById(userId)
                 .orElseThrow(() -> new ServiceException(AUTH_CREDENTIALS_INVALID, ErrorCode.AUTH_INVALID_CREDENTIALS));
@@ -261,12 +273,12 @@ public class AuthService {
         String accessToken = jwtService.generateToken(savedUser);
         UserDto userDto = userMapper.toDto(savedUser);
 
-        log.debug("TOTP disabled successfully for user: {}", userId);
+        log.debug("TOTP disabled successfully for user: {}", sanitizeForLog(userId));
         return buildAuthResponse(accessToken, userDto, false);
     }
 
     public AuthResponseDto loginWithRecoveryCode(RecoveryCodeLoginDto recoveryCodeLoginDto) {
-        log.debug("Authenticating user with recovery code: {}", recoveryCodeLoginDto.getUsernameOrEmail());
+        log.debug("Authenticating user with recovery code: {}", sanitizeForLog(recoveryCodeLoginDto.getUsernameOrEmail()));
 
         User user = findUserByUsernameOrEmail(recoveryCodeLoginDto.getUsernameOrEmail());
         validateUserCredentials(user, convertToLoginDto(recoveryCodeLoginDto));
@@ -296,12 +308,12 @@ public class AuthService {
         UserDto userDto = userMapper.toDto(user);
 
         log.debug("User authenticated successfully with recovery code: {} (remaining codes: {})",
-                user.getUsername(), recoveryCodeService.getRemainingCodesCount(updatedCodes));
+                sanitizeForLog(user.getUsername()), recoveryCodeService.getRemainingCodesCount(updatedCodes));
         return buildAuthResponse(accessToken, userDto, user.isTotpEnabled());
     }
 
     public RecoveryCodesDto regenerateRecoveryCodes(String userId) {
-        log.debug("Regenerating recovery codes for user: {}", userId);
+        log.debug("Regenerating recovery codes for user: {}", sanitizeForLog(userId));
 
         User user = userDao.findById(userId)
                 .orElseThrow(() -> new ServiceException(AUTH_CREDENTIALS_INVALID, ErrorCode.AUTH_INVALID_CREDENTIALS));
@@ -321,7 +333,7 @@ public class AuthService {
         user.setUpdatedAt(now);
         userDao.save(user);
 
-        log.debug("Recovery codes regenerated for user: {} - {} new codes generated", userId, newRecoveryCodes.size());
+        log.debug("Recovery codes regenerated for user: {} - {} new codes generated", sanitizeForLog(userId), newRecoveryCodes.size());
 
         return RecoveryCodesDto.builder()
                 .codes(formattedCodes)
@@ -333,7 +345,7 @@ public class AuthService {
     }
 
     public RecoveryCodesDto getRecoveryCodeStatus(String userId) {
-        log.debug("Getting recovery code status for user: {}", userId);
+        log.debug("Getting recovery code status for user: {}", sanitizeForLog(userId));
 
         User user = userDao.findById(userId)
                 .orElseThrow(() -> new ServiceException(AUTH_CREDENTIALS_INVALID, ErrorCode.AUTH_INVALID_CREDENTIALS));

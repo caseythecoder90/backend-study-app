@@ -31,9 +31,22 @@ import static com.flashcards.backend.flashcards.constants.ErrorMessages.CONTROLL
 import static com.flashcards.backend.flashcards.constants.ErrorMessages.CONTROLLER_INVALID_REQUEST;
 import static com.flashcards.backend.flashcards.constants.ErrorMessages.CONTROLLER_MISSING_PARAMETER;
 import static com.flashcards.backend.flashcards.constants.ErrorMessages.CONTROLLER_RESOURCE_NOT_FOUND;
+import static com.flashcards.backend.flashcards.constants.ErrorMessages.HANDLER_DATA_DEPENDENCY_CONSTRAINT;
+import static com.flashcards.backend.flashcards.constants.ErrorMessages.HANDLER_DATA_INTEGRITY_VIOLATION;
+import static com.flashcards.backend.flashcards.constants.ErrorMessages.HANDLER_DUPLICATE_KEY;
+import static com.flashcards.backend.flashcards.constants.ErrorMessages.HANDLER_INTERNAL_ERROR;
+import static com.flashcards.backend.flashcards.constants.ErrorMessages.HANDLER_INVALID_REQUEST_BODY;
+import static com.flashcards.backend.flashcards.constants.ErrorMessages.HANDLER_MEDIA_TYPE_NOT_SUPPORTED;
+import static com.flashcards.backend.flashcards.constants.ErrorMessages.HANDLER_METHOD_NOT_ALLOWED;
+import static com.flashcards.backend.flashcards.constants.ErrorMessages.HANDLER_PARAMETER_TYPE_EXPECTED;
+import static com.flashcards.backend.flashcards.constants.ErrorMessages.HANDLER_PARAMETER_TYPE_GOT;
+import static com.flashcards.backend.flashcards.constants.ErrorMessages.HANDLER_SUPPORTED_METHODS_NONE;
+import static com.flashcards.backend.flashcards.constants.ErrorMessages.HANDLER_UNEXPECTED_ERROR;
+import static com.flashcards.backend.flashcards.constants.ErrorMessages.HANDLER_VALIDATION_FAILED;
+import static com.flashcards.backend.flashcards.constants.Punctuation.COLON_SPACE;
+import static com.flashcards.backend.flashcards.constants.Punctuation.COMMA_SPACE;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
-import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 @Slf4j
 @RestControllerAdvice
@@ -66,7 +79,7 @@ public class GlobalExceptionHandler {
         ErrorResponse errorResponse = buildErrorResponse(
                 HttpStatus.INTERNAL_SERVER_ERROR,
                 ex.getErrorCode(),
-                "An internal error occurred. Please try again later.",
+                HANDLER_INTERNAL_ERROR,
                 request.getRequestURI()
         );
 
@@ -87,19 +100,19 @@ public class GlobalExceptionHandler {
 
         String message = validationErrors.stream()
                 .map(ErrorResponse.ValidationError::getMessage)
-                .collect(Collectors.joining(", "));
+                .collect(Collectors.joining(COMMA_SPACE.getValue()));
 
         ErrorResponse errorResponse = ErrorResponse.builder()
                 .timestamp(LocalDateTime.now())
                 .status(HttpStatus.BAD_REQUEST.value())
                 .error(HttpStatus.BAD_REQUEST.getReasonPhrase())
                 .code(ErrorCode.CONTROLLER_BAD_REQUEST)
-                .message("Validation failed: " + message)
+                .message(HANDLER_VALIDATION_FAILED.formatted(COLON_SPACE.getValue(), message))
                 .path(request.getRequestURI())
                 .validationErrors(validationErrors)
                 .build();
 
-        log.warn("Validation failed: {}", message);
+        log.warn("Validation failed{} {}", COLON_SPACE.getValue(), message);
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
     }
 
@@ -129,16 +142,22 @@ public class GlobalExceptionHandler {
                 .map(Class::getSimpleName)
                 .orElse("unknown");
 
+        String typeDetails = HANDLER_PARAMETER_TYPE_EXPECTED.formatted(COLON_SPACE.getValue(), expectedType) +
+                COMMA_SPACE.getValue() +
+                HANDLER_PARAMETER_TYPE_GOT.formatted(COLON_SPACE.getValue(), ex.getValue());
+
         ErrorResponse errorResponse = buildErrorResponse(
                 HttpStatus.BAD_REQUEST,
                 ErrorCode.CONTROLLER_BAD_REQUEST,
-                CONTROLLER_INVALID_PARAMETER.formatted(parameterName,
-                    "Expected type: " + expectedType + ", got: " + ex.getValue()),
+                CONTROLLER_INVALID_PARAMETER.formatted(parameterName, typeDetails),
                 request.getRequestURI()
         );
 
-        log.warn("Type mismatch for parameter {}: expected {}, got {}",
-                parameterName, expectedType, ex.getValue());
+        log.warn("Type mismatch for parameter{}{} expected{} {}{} got{} {}",
+                COLON_SPACE.getValue(), parameterName,
+                COLON_SPACE.getValue(), expectedType,
+                COMMA_SPACE.getValue(),
+                COLON_SPACE.getValue(), ex.getValue());
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
     }
 
@@ -149,8 +168,8 @@ public class GlobalExceptionHandler {
 
         String message = Optional.ofNullable(ex.getMessage())
                 .filter(StringUtils::isNotBlank)
-                .map(msg -> msg.split(":")[0]) // Take only the first part of the message
-                .orElse("Invalid request body");
+                .map(msg -> msg.split(COLON_SPACE.getValue())[0]) // Take only the first part of the message
+                .orElse(HANDLER_INVALID_REQUEST_BODY);
 
         ErrorResponse errorResponse = buildErrorResponse(
                 HttpStatus.BAD_REQUEST,
@@ -171,17 +190,17 @@ public class GlobalExceptionHandler {
         String supportedMethods = Optional.ofNullable(ex.getSupportedHttpMethods())
                 .map(methods -> methods.stream()
                         .map(Object::toString)
-                        .collect(Collectors.joining(", ")))
-                .orElse("none");
+                        .collect(Collectors.joining(COMMA_SPACE.getValue())))
+                .orElse(HANDLER_SUPPORTED_METHODS_NONE);
 
         ErrorResponse errorResponse = buildErrorResponse(
                 HttpStatus.METHOD_NOT_ALLOWED,
                 ErrorCode.CONTROLLER_BAD_REQUEST,
-                "Method " + ex.getMethod() + " not allowed. Supported methods: " + supportedMethods,
+                HANDLER_METHOD_NOT_ALLOWED.formatted(ex.getMethod(), COLON_SPACE.getValue(), supportedMethods),
                 request.getRequestURI()
         );
 
-        log.warn("Method not allowed: {} for path {}", ex.getMethod(), request.getRequestURI());
+        log.warn("Method not allowed{} {} for path {}", COLON_SPACE.getValue(), ex.getMethod(), request.getRequestURI());
         return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED).body(errorResponse);
     }
 
@@ -192,16 +211,16 @@ public class GlobalExceptionHandler {
 
         String supportedTypes = ex.getSupportedMediaTypes().stream()
                 .map(Object::toString)
-                .collect(Collectors.joining(", "));
+                .collect(Collectors.joining(COMMA_SPACE.getValue()));
 
         ErrorResponse errorResponse = buildErrorResponse(
                 HttpStatus.UNSUPPORTED_MEDIA_TYPE,
                 ErrorCode.CONTROLLER_BAD_REQUEST,
-                "Media type not supported. Supported types: " + supportedTypes,
+                HANDLER_MEDIA_TYPE_NOT_SUPPORTED.formatted(COLON_SPACE.getValue(), supportedTypes),
                 request.getRequestURI()
         );
 
-        log.warn("Unsupported media type: {}", ex.getContentType());
+        log.warn("Unsupported media type{} {}", COLON_SPACE.getValue(), ex.getContentType());
         return ResponseEntity.status(HttpStatus.UNSUPPORTED_MEDIA_TYPE).body(errorResponse);
     }
 
@@ -229,11 +248,11 @@ public class GlobalExceptionHandler {
         ErrorResponse errorResponse = buildErrorResponse(
                 HttpStatus.CONFLICT,
                 ErrorCode.SERVICE_DUPLICATE_ERROR,
-                "A resource with the same key already exists",
+                HANDLER_DUPLICATE_KEY,
                 request.getRequestURI()
         );
 
-        log.warn("Duplicate key violation: {}", ex.getMessage());
+        log.warn("Duplicate key violation{} {}", COLON_SPACE.getValue(), ex.getMessage());
         return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
     }
 
@@ -242,13 +261,13 @@ public class GlobalExceptionHandler {
             DataIntegrityViolationException ex,
             HttpServletRequest request) {
 
-        String message = "Data integrity violation";
+        String message = HANDLER_DATA_INTEGRITY_VIOLATION;
 
         if (nonNull(ex.getMessage())) {
             if (ex.getMessage().contains("duplicate")) {
-                message = "A resource with the same key already exists";
+                message = HANDLER_DUPLICATE_KEY;
             } else if (ex.getMessage().contains("foreign key")) {
-                message = "Cannot perform operation due to related data dependencies";
+                message = HANDLER_DATA_DEPENDENCY_CONSTRAINT;
             }
         }
 
@@ -259,7 +278,7 @@ public class GlobalExceptionHandler {
                 request.getRequestURI()
         );
 
-        log.error("Data integrity violation: {}", ex.getMessage());
+        log.error("Data integrity violation{} {}", COLON_SPACE.getValue(), ex.getMessage());
         return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
     }
 
@@ -275,7 +294,7 @@ public class GlobalExceptionHandler {
                 request.getRequestURI()
         );
 
-        log.warn("Illegal argument: {}", ex.getMessage());
+        log.warn("Illegal argument{} {}", COLON_SPACE.getValue(), ex.getMessage());
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
     }
 
@@ -287,11 +306,11 @@ public class GlobalExceptionHandler {
         ErrorResponse errorResponse = buildErrorResponse(
                 HttpStatus.INTERNAL_SERVER_ERROR,
                 ErrorCode.SERVICE_BUSINESS_LOGIC_ERROR,
-                "An unexpected error occurred. Please try again later.",
+                HANDLER_UNEXPECTED_ERROR,
                 request.getRequestURI()
         );
 
-        log.error("Unexpected error occurred: {}", ex.getMessage(), ex);
+        log.error("Unexpected error occurred{} {}", COLON_SPACE.getValue(), ex.getMessage(), ex);
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
     }
 
@@ -320,11 +339,29 @@ public class GlobalExceptionHandler {
         }
 
         return switch (errorCode) {
-            case SERVICE_VALIDATION_ERROR, CONTROLLER_BAD_REQUEST -> HttpStatus.BAD_REQUEST;
+            // 400 Bad Request - Validation and input errors
+            case SERVICE_VALIDATION_ERROR, CONTROLLER_BAD_REQUEST, INVALID_INPUT -> HttpStatus.BAD_REQUEST;
+
+            // 401 Unauthorized - Authentication failures
+            case SERVICE_AUTHORIZATION_ERROR, CONTROLLER_UNAUTHORIZED,
+                 AUTH_INVALID_CREDENTIALS, AUTH_TOKEN_INVALID, AUTH_TOKEN_EXPIRED,
+                 AUTH_PASSWORD_INVALID, AUTH_TOTP_INVALID, AUTH_TOTP_REQUIRED,
+                 AUTH_RECOVERY_CODE_INVALID, AUTH_RECOVERY_CODES_EXHAUSTED,
+                 AUTH_RECOVERY_CODES_NOT_ENABLED -> HttpStatus.UNAUTHORIZED;
+
+            // 403 Forbidden - Authenticated but not allowed
+            case CONTROLLER_FORBIDDEN, AUTH_USER_DISABLED -> HttpStatus.FORBIDDEN;
+
+            // 404 Not Found - Resource not found
             case SERVICE_NOT_FOUND, CONTROLLER_NOT_FOUND -> HttpStatus.NOT_FOUND;
+
+            // 409 Conflict - Duplicate resources
             case SERVICE_DUPLICATE_ERROR -> HttpStatus.CONFLICT;
-            case SERVICE_AUTHORIZATION_ERROR, CONTROLLER_UNAUTHORIZED -> HttpStatus.UNAUTHORIZED;
-            case CONTROLLER_FORBIDDEN -> HttpStatus.FORBIDDEN;
+
+            // 429 Too Many Requests - Rate limiting
+            case SERVICE_AI_RATE_LIMIT_EXCEEDED -> HttpStatus.TOO_MANY_REQUESTS;
+
+            // 500 Internal Server Error - Server errors, DAO errors, unexpected errors
             default -> HttpStatus.INTERNAL_SERVER_ERROR;
         };
     }

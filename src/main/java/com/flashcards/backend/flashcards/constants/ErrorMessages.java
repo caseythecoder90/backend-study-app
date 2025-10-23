@@ -152,6 +152,20 @@ public class ErrorMessages {
     public static final String INIT_ADMIN_CREATION_FAILED = "Failed to initialize admin user";
     public static final String INIT_ADMIN_UPGRADE_FAILED = "Failed to upgrade user %s to admin role";
 
+    // Global Exception Handler Messages
+    public static final String HANDLER_INTERNAL_ERROR = "An internal error occurred. Please try again later.";
+    public static final String HANDLER_UNEXPECTED_ERROR = "An unexpected error occurred. Please try again later.";
+    public static final String HANDLER_VALIDATION_FAILED = "Validation failed%s %s";
+    public static final String HANDLER_METHOD_NOT_ALLOWED = "Method %s not allowed. Supported methods%s %s";
+    public static final String HANDLER_MEDIA_TYPE_NOT_SUPPORTED = "Media type not supported. Supported types%s %s";
+    public static final String HANDLER_DUPLICATE_KEY = "A resource with the same key already exists";
+    public static final String HANDLER_DATA_INTEGRITY_VIOLATION = "Data integrity violation";
+    public static final String HANDLER_DATA_DEPENDENCY_CONSTRAINT = "Cannot perform operation due to related data dependencies";
+    public static final String HANDLER_INVALID_REQUEST_BODY = "Invalid request body";
+    public static final String HANDLER_PARAMETER_TYPE_EXPECTED = "Expected type%s %s";
+    public static final String HANDLER_PARAMETER_TYPE_GOT = "got%s %s";
+    public static final String HANDLER_SUPPORTED_METHODS_NONE = "none";
+
     private ErrorMessages() {
         // Private constructor to prevent instantiation
     }

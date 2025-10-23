@@ -1,5 +1,8 @@
 package com.flashcards.backend.flashcards.exception;
 
+import lombok.Getter;
+
+@Getter
 public enum ErrorCode {
     // DAO Layer Error Codes
     DAO_SAVE_ERROR("DAO_001", "Failed to save entity"),
@@ -64,11 +67,4 @@ public enum ErrorCode {
         this.defaultMessage = defaultMessage;
     }
 
-    public String getCode() {
-        return code;
-    }
-
-    public String getDefaultMessage() {
-        return defaultMessage;
-    }
 }

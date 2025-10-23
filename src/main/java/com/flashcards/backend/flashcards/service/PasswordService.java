@@ -23,7 +23,7 @@ public class PasswordService {
     public String encryptPassword(String rawPassword) {
         if (isNotBlank(rawPassword)) {
             String encodedPassword = passwordEncoder.encode(rawPassword);
-            log.debug("Password encrypted successfully");
+            log.info("Password encrypted successfully");
             return encodedPassword;
         }
         throw new ServiceException(AUTH_PASSWORD_NULL_EMPTY, ErrorCode.AUTH_PASSWORD_INVALID);

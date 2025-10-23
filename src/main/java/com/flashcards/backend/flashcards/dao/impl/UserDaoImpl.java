@@ -18,6 +18,10 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Supplier;
 
+import static com.flashcards.backend.flashcards.constants.AuthConstants.FIELD_EMAIL;
+import static com.flashcards.backend.flashcards.constants.AuthConstants.FIELD_ROLE;
+import static com.flashcards.backend.flashcards.constants.AuthConstants.FIELD_USERNAME;
+import static com.flashcards.backend.flashcards.constants.AuthConstants.FIELD_USERS;
 import static com.flashcards.backend.flashcards.constants.ErrorMessages.DAO_COUNT_BY_FIELD_ERROR;
 import static com.flashcards.backend.flashcards.constants.ErrorMessages.DAO_COUNT_ERROR;
 import static com.flashcards.backend.flashcards.constants.ErrorMessages.DAO_DELETE_ERROR;
@@ -33,7 +37,6 @@ import static com.flashcards.backend.flashcards.constants.ErrorMessages.DAO_SAVE
 import static com.flashcards.backend.flashcards.constants.ErrorMessages.DAO_UPDATE_ERROR;
 import static com.flashcards.backend.flashcards.constants.ErrorMessages.ENTITY_USER;
 import static java.util.Objects.requireNonNull;
-import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 @Slf4j
 @Component
@@ -59,7 +62,7 @@ public class UserDaoImpl implements UserDao {
                         .filter(StringUtils::isNotBlank)
                         .flatMap(userRepository::findByUsername),
                 ErrorCode.DAO_FIND_ERROR,
-                DAO_FIND_BY_FIELD_ERROR.formatted(ENTITY_USER, "username", username)
+                DAO_FIND_BY_FIELD_ERROR.formatted(ENTITY_USER, FIELD_USERNAME, username)
         );
     }
 
@@ -70,7 +73,7 @@ public class UserDaoImpl implements UserDao {
                         .filter(StringUtils::isNotBlank)
                         .flatMap(userRepository::findByEmail),
                 ErrorCode.DAO_FIND_ERROR,
-                DAO_FIND_BY_FIELD_ERROR.formatted(ENTITY_USER, "email", email)
+                DAO_FIND_BY_FIELD_ERROR.formatted(ENTITY_USER, FIELD_EMAIL, email)
         );
     }
 
@@ -79,7 +82,7 @@ public class UserDaoImpl implements UserDao {
         return executeWithExceptionHandling(
                 userRepository::findAll,
                 ErrorCode.DAO_FIND_ERROR,
-                DAO_FIND_ALL_ERROR.formatted("users")
+                DAO_FIND_ALL_ERROR.formatted(FIELD_USERS)
         );
     }
 
@@ -136,7 +139,7 @@ public class UserDaoImpl implements UserDao {
                         .map(userRepository::existsByUsername)
                         .orElse(false),
                 ErrorCode.DAO_FIND_ERROR,
-                DAO_EXISTS_ERROR.formatted(ENTITY_USER, "username", username)
+                DAO_EXISTS_ERROR.formatted(ENTITY_USER, FIELD_USERNAME, username)
         );
     }
 
@@ -148,7 +151,7 @@ public class UserDaoImpl implements UserDao {
                         .map(userRepository::existsByEmail)
                         .orElse(false),
                 ErrorCode.DAO_FIND_ERROR,
-                DAO_EXISTS_ERROR.formatted(ENTITY_USER, "email", email)
+                DAO_EXISTS_ERROR.formatted(ENTITY_USER, FIELD_EMAIL, email)
         );
     }
 
@@ -179,7 +182,7 @@ public class UserDaoImpl implements UserDao {
         return executeWithExceptionHandling(
                 userRepository::count,
                 ErrorCode.DAO_FIND_ERROR,
-                DAO_COUNT_ERROR.formatted("users")
+                DAO_COUNT_ERROR.formatted(FIELD_USERS)
         );
     }
 
@@ -188,7 +191,7 @@ public class UserDaoImpl implements UserDao {
         return executeWithExceptionHandling(
                 () -> userRepository.countByRolesContaining(role),
                 ErrorCode.DAO_FIND_ERROR,
-                DAO_COUNT_BY_FIELD_ERROR.formatted(ENTITY_USER, "role", role)
+                DAO_COUNT_BY_FIELD_ERROR.formatted(ENTITY_USER, FIELD_ROLE, role)
         );
     }
 

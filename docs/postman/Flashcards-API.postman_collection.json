@@ -1,0 +1,1283 @@
+{
+	"info": {
+		"_postman_id": "flashcards-api-collection-v2",
+		"name": "Flashcards API - Complete Collection",
+		"description": "Complete API collection for Flashcards Backend\n\n**Base URL:** http://localhost:8080\n\n**Authentication:** Most endpoints require a JWT token. First register/login, then use the token in the Authorization header.\n\n**Environment Variables Used:**\n- `baseUrl` - API base URL (default: http://localhost:8080)\n- `token` - JWT authentication token (set automatically after login)\n- `userId` - Current user ID (set after login)\n- `deckId` - Current deck ID (set after creating deck)\n- `flashcardId` - Current flashcard ID (set after creating flashcard)",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "1. Authentication",
+			"item": [
+				{
+					"name": "Register User",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    var jsonData = pm.response.json();",
+									"    if (jsonData.user && jsonData.user.id) {",
+									"        pm.environment.set(\"userId\", jsonData.user.id);",
+									"    }",
+									"    if (jsonData.accessToken) {",
+									"        pm.environment.set(\"token\", jsonData.accessToken);",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"username\": \"testuser\",\n  \"email\": \"test@example.com\",\n  \"password\": \"Test123!@#\",\n  \"firstName\": \"Test\",\n  \"lastName\": \"User\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/auth/register",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "auth", "register"]
+						},
+						"description": "Register a new user with username, email, and password"
+					},
+					"response": []
+				},
+				{
+					"name": "Login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    var jsonData = pm.response.json();",
+									"    pm.environment.set(\"token\", jsonData.accessToken);",
+									"    pm.environment.set(\"userId\", jsonData.user.id);",
+									"    console.log(\"Token saved:\", jsonData.accessToken);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"usernameOrEmail\": \"testuser\",\n  \"password\": \"Test123!@#\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/auth/login",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "auth", "login"]
+						},
+						"description": "Login with username/email and password, returns JWT token"
+					},
+					"response": []
+				},
+				{
+					"name": "Setup TOTP (2FA)",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/auth/totp/setup",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "auth", "totp", "setup"]
+						},
+						"description": "Setup TOTP 2FA, returns QR code and recovery codes"
+					},
+					"response": []
+				},
+				{
+					"name": "Enable TOTP",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"totpCode\": \"123456\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/auth/totp/enable",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "auth", "totp", "enable"]
+						},
+						"description": "Enable TOTP after setup by verifying code"
+					},
+					"response": []
+				},
+				{
+					"name": "Disable TOTP",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/auth/totp/disable",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "auth", "totp", "disable"]
+						},
+						"description": "Disable TOTP 2FA for the user"
+					},
+					"response": []
+				},
+				{
+					"name": "Login with Recovery Code",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"usernameOrEmail\": \"testuser\",\n  \"password\": \"Test123!@#\",\n  \"recoveryCode\": \"ABCD-EFGH\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/auth/login/recovery",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "auth", "login", "recovery"]
+						},
+						"description": "Login using a recovery code when TOTP is unavailable"
+					},
+					"response": []
+				},
+				{
+					"name": "Regenerate Recovery Codes",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/auth/recovery-codes/regenerate",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "auth", "recovery-codes", "regenerate"]
+						},
+						"description": "Generate new recovery codes (old codes will be invalidated)"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Recovery Code Status",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/auth/recovery-codes/status",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "auth", "recovery-codes", "status"]
+						},
+						"description": "Check how many recovery codes remain"
+					},
+					"response": []
+				},
+				{
+					"name": "Get OAuth2 Providers",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/auth/oauth2/providers",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "auth", "oauth2", "providers"]
+						},
+						"description": "Get available OAuth2 providers (Google, GitHub)"
+					},
+					"response": []
+				}
+			],
+			"description": "Authentication and authorization endpoints"
+		},
+		{
+			"name": "2. Decks",
+			"item": [
+				{
+					"name": "Create Deck",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    var jsonData = pm.response.json();",
+									"    pm.environment.set(\"deckId\", jsonData.id);",
+									"    console.log(\"Deck created:\", jsonData.id);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"title\": \"Spring Boot Fundamentals\",\n  \"description\": \"Core concepts of Spring Boot framework\",\n  \"category\": \"Programming\",\n  \"userId\": \"{{userId}}\",\n  \"isPublic\": false,\n  \"tags\": [\"java\", \"spring\", \"backend\"]\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/decks",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "decks"]
+						},
+						"description": "Create a new flashcard deck"
+					},
+					"response": []
+				},
+				{
+					"name": "Get All Decks",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/decks",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "decks"]
+						},
+						"description": "Get all decks"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Deck by ID",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/decks/{{deckId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "decks", "{{deckId}}"]
+						},
+						"description": "Get a specific deck by ID"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Decks by User",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/decks/user/{{userId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "decks", "user", "{{userId}}"]
+						},
+						"description": "Get all decks for a specific user"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Public Decks",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/decks/public",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "decks", "public"]
+						},
+						"description": "Get all public decks"
+					},
+					"response": []
+				},
+				{
+					"name": "Search Decks",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/decks/search?query=spring",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "decks", "search"],
+							"query": [
+								{
+									"key": "query",
+									"value": "spring"
+								}
+							]
+						},
+						"description": "Search decks by title or description"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Deck",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"title\": \"Spring Boot Advanced\",\n  \"description\": \"Advanced Spring Boot concepts\",\n  \"category\": \"Programming\",\n  \"tags\": [\"java\", \"spring\", \"advanced\"]\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/decks/{{deckId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "decks", "{{deckId}}"]
+						},
+						"description": "Update an existing deck"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Deck",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/decks/{{deckId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "decks", "{{deckId}}"]
+						},
+						"description": "Delete a deck (also deletes all flashcards in the deck)"
+					},
+					"response": []
+				}
+			],
+			"description": "Deck management endpoints"
+		},
+		{
+			"name": "3. Flashcards",
+			"item": [
+				{
+					"name": "Create Flashcard",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    var jsonData = pm.response.json();",
+									"    pm.environment.set(\"flashcardId\", jsonData.id);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"deckId\": \"{{deckId}}\",\n  \"userId\": \"{{userId}}\",\n  \"front\": {\n    \"text\": \"What is dependency injection?\",\n    \"type\": \"TEXT_ONLY\"\n  },\n  \"back\": {\n    \"text\": \"Dependency injection is a design pattern where dependencies are provided to a class rather than created by the class itself. It promotes loose coupling and easier testing.\",\n    \"type\": \"TEXT_ONLY\"\n  },\n  \"difficulty\": \"MEDIUM\",\n  \"tags\": [\"design-patterns\", \"spring\"]\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/flashcards",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "flashcards"]
+						},
+						"description": "Create a new flashcard"
+					},
+					"response": []
+				},
+				{
+					"name": "Create Flashcard with Code",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"deckId\": \"{{deckId}}\",\n  \"userId\": \"{{userId}}\",\n  \"front\": {\n    \"text\": \"How do you inject dependencies in Spring Boot?\",\n    \"type\": \"TEXT_ONLY\"\n  },\n  \"back\": {\n    \"text\": \"Use constructor injection with @Autowired:\",\n    \"codeBlocks\": [\n      {\n        \"language\": \"java\",\n        \"code\": \"@Service\\npublic class MyService {\\n    private final MyRepository repository;\\n    \\n    @Autowired\\n    public MyService(MyRepository repository) {\\n        this.repository = repository;\\n    }\\n}\",\n        \"highlighted\": true\n      }\n    ],\n    \"type\": \"MIXED\"\n  },\n  \"difficulty\": \"MEDIUM\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/flashcards",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "flashcards"]
+						},
+						"description": "Create flashcard with code block"
+					},
+					"response": []
+				},
+				{
+					"name": "Get All Flashcards",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/flashcards",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "flashcards"]
+						},
+						"description": "Get all flashcards"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Flashcards by Deck",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/flashcards/deck/{{deckId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "flashcards", "deck", "{{deckId}}"]
+						},
+						"description": "Get all flashcards in a deck"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Flashcard by ID",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/flashcards/{{flashcardId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "flashcards", "{{flashcardId}}"]
+						},
+						"description": "Get a specific flashcard"
+					},
+					"response": []
+				},
+				{
+					"name": "Search Flashcards",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/flashcards/search?query=dependency",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "flashcards", "search"],
+							"query": [
+								{
+									"key": "query",
+									"value": "dependency"
+								}
+							]
+						},
+						"description": "Search flashcards by front/back text"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Flashcard",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"front\": {\n    \"text\": \"What is dependency injection? (Updated)\",\n    \"type\": \"TEXT_ONLY\"\n  },\n  \"back\": {\n    \"text\": \"Updated answer here\",\n    \"type\": \"TEXT_ONLY\"\n  },\n  \"difficulty\": \"HARD\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/flashcards/{{flashcardId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "flashcards", "{{flashcardId}}"]
+						},
+						"description": "Update an existing flashcard"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Flashcard",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/flashcards/{{flashcardId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "flashcards", "{{flashcardId}}"]
+						},
+						"description": "Delete a flashcard"
+					},
+					"response": []
+				}
+			],
+			"description": "Flashcard CRUD operations"
+		},
+		{
+			"name": "4. AI Operations",
+			"item": [
+				{
+					"name": "Generate Flashcards from Text",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"userId\": \"{{userId}}\",\n  \"deckId\": \"{{deckId}}\",\n  \"text\": \"Dependency Injection is a design pattern in Spring Framework. It allows for loose coupling between components by injecting dependencies rather than creating them within the class. There are three types: constructor injection (recommended), setter injection, and field injection. Constructor injection is preferred because it makes dependencies explicit and allows for immutable components.\",\n  \"count\": 5,\n  \"model\": \"GPT_4O_MINI\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/ai/flashcards/generate-text",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "ai", "flashcards", "generate-text"]
+						},
+						"description": "Generate flashcards from text using AI"
+					},
+					"response": []
+				},
+				{
+					"name": "Generate Flashcards from Image",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "userId",
+									"value": "{{userId}}",
+									"type": "text"
+								},
+								{
+									"key": "deckId",
+									"value": "{{deckId}}",
+									"type": "text"
+								},
+								{
+									"key": "imageFile",
+									"type": "file",
+									"src": "/path/to/image.jpg"
+								},
+								{
+									"key": "count",
+									"value": "3",
+									"type": "text"
+								},
+								{
+									"key": "model",
+									"value": "GEMINI_2_0_FLASH",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/ai/flashcards/generate-image",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "ai", "flashcards", "generate-image"]
+						},
+						"description": "Generate flashcards from an image using vision AI"
+					},
+					"response": []
+				},
+				{
+					"name": "Generate Flashcards from Prompt",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"userId\": \"{{userId}}\",\n  \"deckId\": \"{{deckId}}\",\n  \"prompt\": \"Create flashcards about RESTful API best practices\",\n  \"count\": 5,\n  \"model\": \"GPT_4O_MINI\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/ai/flashcards/generate-prompt",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "ai", "flashcards", "generate-prompt"]
+						},
+						"description": "Generate flashcards from a custom prompt"
+					},
+					"response": []
+				},
+				{
+					"name": "Generate Summary",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"userId\": \"{{userId}}\",\n  \"sourceType\": \"TEXT\",\n  \"text\": \"The Factory Design Pattern is a creational pattern that provides an interface for creating objects in a superclass, but allows subclasses to alter the type of objects that will be created. This pattern is particularly useful when you have a superclass with multiple subclasses and you want to create objects based on input. The pattern involves creating a factory class that has a method for creating objects. This method takes some parameter and based on that parameter creates an object.\",\n  \"format\": \"PARAGRAPH\",\n  \"length\": \"MEDIUM\",\n  \"model\": \"GPT_4O_MINI\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/ai/summary/generate",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "ai", "summary", "generate"]
+						},
+						"description": "Generate a summary of text content"
+					},
+					"response": []
+				},
+				{
+					"name": "Generate Image from Text",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"userId\": \"{{userId}}\",\n  \"prompt\": \"A diagram showing the MVC architecture pattern\",\n  \"model\": \"DALL_E_3\",\n  \"size\": \"1024x1024\",\n  \"quality\": \"standard\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/ai/images/generate",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "ai", "images", "generate"]
+						},
+						"description": "Generate an image from text prompt using DALL-E"
+					},
+					"response": []
+				}
+			],
+			"description": "AI-powered content generation"
+		},
+		{
+			"name": "5. Audio Features",
+			"item": [
+				{
+					"name": "Text to Speech (JSON Response)",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"userId\": \"{{userId}}\",\n  \"text\": \"Dependency injection is a design pattern where dependencies are provided to a class rather than created by the class itself. It promotes loose coupling and easier testing.\",\n  \"outputType\": \"RECITATION\",\n  \"voice\": \"ALLOY\",\n  \"speed\": 1.0\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/audio/text-to-speech",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "audio", "text-to-speech"]
+						},
+						"description": "Convert text to speech, returns JSON with base64 audio"
+					},
+					"response": []
+				},
+				{
+					"name": "Text to Speech (Audio Summary)",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"userId\": \"{{userId}}\",\n  \"text\": \"The Factory Design Pattern is a creational pattern that provides an interface for creating objects in a superclass, but allows subclasses to alter the type of objects that will be created. This pattern is particularly useful when you have a superclass with multiple subclasses and you want to create objects based on input.\",\n  \"outputType\": \"SUMMARY\",\n  \"voice\": \"NOVA\",\n  \"speed\": 1.0,\n  \"summaryWordCount\": 50\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/audio/text-to-speech",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "audio", "text-to-speech"]
+						},
+						"description": "Generate audio summary (AI summarizes text first)"
+					},
+					"response": []
+				},
+				{
+					"name": "Text to Speech (Streaming)",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"userId\": \"{{userId}}\",\n  \"text\": \"This is a test of the streaming text to speech endpoint.\",\n  \"outputType\": \"RECITATION\",\n  \"voice\": \"FABLE\",\n  \"speed\": 1.25\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/audio/text-to-speech/stream",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "audio", "text-to-speech", "stream"]
+						},
+						"description": "Convert text to speech, returns binary MP3 audio stream"
+					},
+					"response": []
+				},
+				{
+					"name": "Speech to Text (Transcription Only)",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "userId",
+									"value": "{{userId}}",
+									"type": "text"
+								},
+								{
+									"key": "audioFile",
+									"type": "file",
+									"src": "/path/to/audio.mp3"
+								},
+								{
+									"key": "action",
+									"value": "TRANSCRIPTION_ONLY",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/audio/speech-to-text",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "audio", "speech-to-text"]
+						},
+						"description": "Transcribe audio to text using Whisper AI"
+					},
+					"response": []
+				},
+				{
+					"name": "Speech to Text with Summary",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "userId",
+									"value": "{{userId}}",
+									"type": "text"
+								},
+								{
+									"key": "audioFile",
+									"type": "file",
+									"src": "/path/to/lecture.mp3"
+								},
+								{
+									"key": "action",
+									"value": "SUMMARY",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/audio/speech-to-text",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "audio", "speech-to-text"]
+						},
+						"description": "Transcribe audio and generate summary"
+					},
+					"response": []
+				},
+				{
+					"name": "Speech to Text with Flashcards",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "userId",
+									"value": "{{userId}}",
+									"type": "text"
+								},
+								{
+									"key": "audioFile",
+									"type": "file",
+									"src": "/path/to/notes.mp3"
+								},
+								{
+									"key": "action",
+									"value": "FLASHCARDS",
+									"type": "text"
+								},
+								{
+									"key": "deckId",
+									"value": "{{deckId}}",
+									"type": "text"
+								},
+								{
+									"key": "flashcardCount",
+									"value": "5",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/audio/speech-to-text",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "audio", "speech-to-text"]
+						},
+						"description": "Transcribe audio and generate flashcards"
+					},
+					"response": []
+				}
+			],
+			"description": "Audio processing features (TTS and STT)"
+		},
+		{
+			"name": "6. Operations",
+			"item": [
+				{
+					"name": "Encrypt Text",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"text\": \"my secret text\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/operations/encrypt",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "operations", "encrypt"]
+						},
+						"description": "Encrypt text using Jasypt"
+					},
+					"response": []
+				},
+				{
+					"name": "Decrypt Text",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"text\": \"ENC(encrypted_text_here)\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/operations/decrypt",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "operations", "decrypt"]
+						},
+						"description": "Decrypt text using Jasypt"
+					},
+					"response": []
+				}
+			],
+			"description": "Utility operations"
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:8080",
+			"type": "string"
+		}
+	]
+}

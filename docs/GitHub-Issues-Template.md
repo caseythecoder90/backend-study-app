@@ -32,6 +32,36 @@ Currently, the application has no rate limiting, making it vulnerable to:
 - API abuse and cost overruns (AI endpoints cost $0.50+ per request)
 - DDoS attacks
 
+**Description:**
+Currently, the application has no rate limiting, making it vulnerable to:
+- Brute force attacks on authentication endpoints
+- API abuse and cost overruns (AI endpoints cost $0.50+ per request)
+- DDoS attacks
+
+**Acceptance Criteria:**
+- [ ] Add Bucket4j and Redis dependencies to pom.xml
+- [ ] Create `RateLimitProperties` configuration class
+- [ ] Create `RateLimitService` with token bucket implementation
+- [ ] Create `@RateLimited` annotation
+- [ ] Implement `RateLimitAspect` for intercepting annotated methods
+- [ ] Configure rate limits in application.yml:
+  - Auth login: 5 requests / 5 minutes per IP
+  - TOTP verification: 3 requests / 5 minutes per user
+  - AI flashcard generation: 10 requests / minute per user
+  - AI summarization: 15 requests / minute per user
+  - Audio TTS: 10 requests / minute per user
+  - Audio STT: 5 requests / minute per user
+- [ ] Add rate limit exceeded error handling (429 status)
+- [ ] Add response headers: X-RateLimit-Limit, X-RateLimit-Remaining, Retry-After
+- [ ] Write unit tests for RateLimitService
+- [ ] Write integration tests with embedded Redis
+- [ ] Update API documentation with rate limit information
+
+**Labels:** `critical`, `security`, `backend`, `mvp-blocker`
+**Milestone:** MVP Release
+**Estimated Effort:** 2-3 days
+**Priority:** P0 (Highest)
+**Related Documentation:** `docs/Rate-Limiting-Redis-Design.md`, `docs/Security-Measures-Review.md`
 **Acceptance Criteria:**
 - [ ] Add Bucket4j and Redis dependencies to pom.xml
 - [ ] Create `RateLimitProperties` configuration class
@@ -175,7 +205,40 @@ Currently, all AI failures use generic `SERVICE_AI_GENERATION_ERROR`, making deb
 Application is missing critical security headers, making it vulnerable to clickjacking, XSS, and MIME sniffing attacks.
 
 **Missing Headers:**
+- X-Frame-Options (clickjacking protection)#### Issue #5: Security Headers Configuration
+
+**Title:** [CRITICAL] Add Security Headers to All HTTP Responses
+
+**Description:**
+Application is missing critical security headers, making it vulnerable to clickjacking, XSS, and MIME sniffing attacks.
+
+**Missing Headers:**
 - X-Frame-Options (clickjacking protection)
+- X-Content-Type-Options (MIME sniffing protection)
+- Content-Security-Policy (XSS protection)
+- Strict-Transport-Security (HTTPS enforcement)
+- Referrer-Policy
+- Permissions-Policy
+
+**Acceptance Criteria:**
+- [ ] Create `SecurityHeadersConfig` configuration class
+- [ ] Implement `SecurityHeadersFilter` to add headers to all responses:
+  - `X-Frame-Options: DENY`
+  - `X-Content-Type-Options: nosniff`
+  - `X-XSS-Protection: 1; mode=block`
+  - `Content-Security-Policy: default-src 'self'; ...`
+  - `Strict-Transport-Security: max-age=31536000; includeSubDomains` (HTTPS only)
+  - `Referrer-Policy: strict-origin-when-cross-origin`
+  - `Permissions-Policy: geolocation=(), microphone=(), camera=()`
+- [ ] Register filter for all URL patterns (`/*`)
+- [ ] Write integration tests to verify headers in responses
+- [ ] Document headers in API documentation
+
+**Labels:** `critical`, `security`, `backend`, `mvp-blocker`
+**Milestone:** MVP Release
+**Estimated Effort:** 0.5 day
+**Priority:** P0
+**Related Documentation:** `docs/Security-Measures-Review.md`
 - X-Content-Type-Options (MIME sniffing protection)
 - Content-Security-Policy (XSS protection)
 - Strict-Transport-Security (HTTPS enforcement)
