@@ -32,3 +32,16 @@ build/
 ### VS Code ###
 .vscode/
 .DS_Store
+
+### Environment and Credentials ###
+.env
+.env.*
+!.env.example
+*.json
+!pom.xml
+!package.json
+!package-lock.json
+!**/src/**/*.json
+gcp-credentials*
+*-credentials.json
+service-account*.json

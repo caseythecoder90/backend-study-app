@@ -46,7 +46,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     List<String> authorities = jwtService.extractAuthorities(token);
 
                     if (isNotBlank(userId) && isNotBlank(username)) {
-                        // Convert string authorities to Spring Security GrantedAuthority objects
                         List<SimpleGrantedAuthority> grantedAuthorities = authorities.stream()
                                 .map(SimpleGrantedAuthority::new)
                                 .collect(Collectors.toList());
@@ -57,7 +56,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                         authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                         SecurityContextHolder.getContext().setAuthentication(authToken);
 
-                        log.debug("User authenticated: {} (ID: {}) with roles: {}", username, userId, authorities);
+                        log.info("User authenticated: {} (ID: {}) with roles: {}", username, userId, authorities);
                     }
                 }
             } catch (Exception e) {

@@ -53,7 +53,7 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
                                         Authentication authentication) throws IOException, ServletException {
-        log.debug("OAuth2 authentication successful");
+        log.info("OAuth2 authentication successful");
 
         if (authentication instanceof OAuth2AuthenticationToken oauthToken) {
             try {
@@ -78,7 +78,7 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
         String registrationId = oauthToken.getAuthorizedClientRegistrationId();
         Map<String, Object> attributes = oAuth2User.getAttributes();
 
-        log.debug("Processing OAuth2 authentication for provider: {}", registrationId);
+        log.info("Processing OAuth2 authentication for provider: {}", registrationId);
 
         OAuth2UserInfo userInfo = OAuth2UserInfoFactory.getOAuth2UserInfo(registrationId, attributes);
 
@@ -89,7 +89,7 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
         User user = findOrCreateUser(userInfo, registrationId);
         String jwtToken = jwtService.generateToken(user);
 
-        log.debug("OAuth2 authentication successful for user: {}", user.getUsername());
+        log.info("OAuth2 authentication successful for user: {}", user.getUsername());
 
         return UriComponentsBuilder.fromUriString(successRedirectUrl)
                 .queryParam(OAUTH_PARAM_TOKEN, jwtToken)
@@ -140,7 +140,7 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
                 .lastLoginAt(now)
                 .build();
 
-        log.debug("Creating new OAuth user: {}", username);
+        log.info("Creating new OAuth user: {}", username);
         return userDao.save(newUser);
     }
 

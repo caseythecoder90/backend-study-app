@@ -24,14 +24,21 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import java.util.List;
 
 import static com.flashcards.backend.flashcards.constants.SecurityConstants.ADMIN_ONLY_ENDPOINTS;
-import static com.flashcards.backend.flashcards.constants.SecurityConstants.PROTECTED_AUTH_ENDPOINTS;
-import static com.flashcards.backend.flashcards.constants.SecurityConstants.PUBLIC_AUTH_ENDPOINTS;
+import static com.flashcards.backend.flashcards.constants.SecurityConstants.CORS_HEADER_ACCEPT;
+import static com.flashcards.backend.flashcards.constants.SecurityConstants.CORS_HEADER_AUTHORIZATION;
+import static com.flashcards.backend.flashcards.constants.SecurityConstants.CORS_HEADER_CONTENT_TYPE;
+import static com.flashcards.backend.flashcards.constants.SecurityConstants.CORS_HEADER_X_REQUESTED_WITH;
 import static com.flashcards.backend.flashcards.constants.SecurityConstants.CORS_MAX_AGE_SECONDS;
+import static com.flashcards.backend.flashcards.constants.SecurityConstants.CORS_ORIGIN_LOCALHOST;
+import static com.flashcards.backend.flashcards.constants.SecurityConstants.CORS_ORIGIN_LOCALHOST_IP;
+import static com.flashcards.backend.flashcards.constants.SecurityConstants.CORS_ORIGIN_PRODUCTION;
 import static com.flashcards.backend.flashcards.constants.SecurityConstants.HTTP_METHOD_DELETE;
 import static com.flashcards.backend.flashcards.constants.SecurityConstants.HTTP_METHOD_GET;
 import static com.flashcards.backend.flashcards.constants.SecurityConstants.HTTP_METHOD_OPTIONS;
 import static com.flashcards.backend.flashcards.constants.SecurityConstants.HTTP_METHOD_POST;
 import static com.flashcards.backend.flashcards.constants.SecurityConstants.HTTP_METHOD_PUT;
+import static com.flashcards.backend.flashcards.constants.SecurityConstants.PROTECTED_AUTH_ENDPOINTS;
+import static com.flashcards.backend.flashcards.constants.SecurityConstants.PUBLIC_AUTH_ENDPOINTS;
 import static com.flashcards.backend.flashcards.constants.SecurityConstants.PUBLIC_ENDPOINTS;
 import static com.flashcards.backend.flashcards.constants.SecurityConstants.SWAGGER_ENDPOINTS;
 
@@ -59,7 +66,7 @@ public class SecurityConfig {
                                         "font-src 'self' data:; " +
                                         "connect-src 'self'; " +
                                         "frame-ancestors 'none'"))
-                        .xssProtection(xss -> xss.headerValue(XXssProtectionHeaderWriter.HeaderValue.valueOf("1; mode=block")))
+                        .xssProtection(xss -> xss.headerValue(XXssProtectionHeaderWriter.HeaderValue.ENABLED_MODE_BLOCK))
                         .frameOptions(frame -> frame.deny())
                         .contentTypeOptions(contentType -> contentType.disable())
                         .httpStrictTransportSecurity(hsts -> hsts
@@ -79,6 +86,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/decks/category/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/decks/search").permitAll()
                         .requestMatchers("/oauth2/**", "/login/oauth2/**").permitAll()
+                        .requestMatchers("/oauth-test.html", "/auth-success.html", "/auth-error.html").permitAll()
                         .requestMatchers(ADMIN_ONLY_ENDPOINTS).hasRole("ADMIN")
                         .requestMatchers(PROTECTED_AUTH_ENDPOINTS).authenticated()
                         .anyRequest().authenticated()
@@ -93,7 +101,15 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOriginPatterns(List.of("*"));
+
+        // Specific allowed origins for development and production
+        configuration.setAllowedOrigins(List.of(
+                CORS_ORIGIN_LOCALHOST,
+                CORS_ORIGIN_LOCALHOST_IP,
+                CORS_ORIGIN_PRODUCTION
+        ));
+
+        // Standard HTTP methods
         configuration.setAllowedMethods(List.of(
                 HTTP_METHOD_GET,
                 HTTP_METHOD_POST,
@@ -101,7 +117,15 @@ public class SecurityConfig {
                 HTTP_METHOD_DELETE,
                 HTTP_METHOD_OPTIONS
         ));
-        configuration.setAllowedHeaders(List.of("*"));
+
+        // Specific headers instead of wildcard
+        configuration.setAllowedHeaders(List.of(
+                CORS_HEADER_AUTHORIZATION,
+                CORS_HEADER_CONTENT_TYPE,
+                CORS_HEADER_ACCEPT,
+                CORS_HEADER_X_REQUESTED_WITH
+        ));
+
         configuration.setAllowCredentials(true);
         configuration.setMaxAge(CORS_MAX_AGE_SECONDS);
 

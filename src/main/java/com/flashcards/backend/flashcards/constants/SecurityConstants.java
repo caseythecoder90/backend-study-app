@@ -56,6 +56,17 @@ public class SecurityConstants {
     // CORS Settings
     public static final long CORS_MAX_AGE_SECONDS = 3600L;
 
+    // CORS Allowed Origins
+    public static final String CORS_ORIGIN_LOCALHOST = "http://localhost:8080";
+    public static final String CORS_ORIGIN_LOCALHOST_IP = "http://127.0.0.1:8080";
+    public static final String CORS_ORIGIN_PRODUCTION = "https://backend-study-app-production.up.railway.app";
+
+    // CORS Allowed Headers
+    public static final String CORS_HEADER_AUTHORIZATION = "Authorization";
+    public static final String CORS_HEADER_CONTENT_TYPE = "Content-Type";
+    public static final String CORS_HEADER_ACCEPT = "Accept";
+    public static final String CORS_HEADER_X_REQUESTED_WITH = "X-Requested-With";
+
     // Swagger Security
     public static final String SWAGGER_SECURITY_SCHEME_NAME = "bearerAuth";
     public static final String SWAGGER_SECURITY_SCHEME_BEARER_FORMAT = "JWT";

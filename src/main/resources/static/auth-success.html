@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OAuth2 Success</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 48px;
+            max-width: 800px;
+            width: 100%;
+        }
+
+        .success-header {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+
+        .success-icon {
+            width: 64px;
+            height: 64px;
+            background: #48bb78;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 16px;
+        }
+
+        .checkmark {
+            width: 32px;
+            height: 32px;
+            color: white;
+        }
+
+        h1 {
+            color: #1a202c;
+            font-size: 28px;
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            color: #718096;
+            font-size: 16px;
+        }
+
+        .info-card {
+            background: #f7fafc;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 16px;
+            border-left: 4px solid #667eea;
+        }
+
+        .info-card h3 {
+            color: #2d3748;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .token-display {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 16px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            word-break: break-all;
+            line-height: 1.6;
+            position: relative;
+        }
+
+        .copy-btn {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: #4a5568;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .copy-btn:hover {
+            background: #2d3748;
+        }
+
+        .user-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 12px;
+        }
+
+        .user-info-item {
+            background: white;
+            padding: 12px;
+            border-radius: 4px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .user-info-item label {
+            display: block;
+            color: #718096;
+            font-size: 12px;
+            margin-bottom: 4px;
+            font-weight: 600;
+        }
+
+        .user-info-item value {
+            display: block;
+            color: #2d3748;
+            font-size: 14px;
+        }
+
+        .actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 24px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5a67d8;
+        }
+
+        .btn-secondary {
+            background: #e2e8f0;
+            color: #2d3748;
+        }
+
+        .btn-secondary:hover {
+            background: #cbd5e0;
+        }
+
+        .error {
+            background: #fed7d7;
+            color: #c53030;
+            padding: 16px;
+            border-radius: 8px;
+            border-left: 4px solid #e53e3e;
+        }
+
+        .loading {
+            text-align: center;
+            color: #718096;
+            padding: 40px;
+        }
+
+        .spinner {
+            border: 4px solid #e2e8f0;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 16px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="success-header">
+            <div class="success-icon">
+                <svg class="checkmark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                    <path d="M20 6L9 17l-5-5"/>
+                </svg>
+            </div>
+            <h1>Authentication Successful!</h1>
+            <p class="subtitle">Your OAuth2 login was successful</p>
+        </div>
+
+        <div id="content">
+            <div class="loading">
+                <div class="spinner"></div>
+                <p>Processing authentication...</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Parse URL parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        const token = urlParams.get('token');
+        const type = urlParams.get('type');
+        const error = urlParams.get('error');
+
+        function parseJwt(token) {
+            try {
+                const base64Url = token.split('.')[1];
+                const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+                const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+                    return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+                }).join(''));
+                return JSON.parse(jsonPayload);
+            } catch (e) {
+                return null;
+            }
+        }
+
+        function formatDate(timestamp) {
+            const date = new Date(timestamp * 1000);
+            return date.toLocaleString();
+        }
+
+        async function getUserInfo(token) {
+            try {
+                const response = await fetch('http://localhost:8080/api/users/me', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (response.ok) {
+                    return await response.json();
+                }
+                return null;
+            } catch (e) {
+                console.error('Failed to fetch user info:', e);
+                return null;
+            }
+        }
+
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                alert('Token copied to clipboard!');
+            });
+        }
+
+        async function displaySuccess() {
+            if (error) {
+                document.getElementById('content').innerHTML = `
+                    <div class="error">
+                        <h3>Authentication Failed</h3>
+                        <p>Error: ${error}</p>
+                    </div>
+                    <div class="actions">
+                        <a href="/oauth-test.html" class="btn btn-primary">Try Again</a>
+                    </div>
+                `;
+                return;
+            }
+
+            if (!token) {
+                document.getElementById('content').innerHTML = `
+                    <div class="error">
+                        <h3>No Token Found</h3>
+                        <p>The authentication response did not include a token.</p>
+                    </div>
+                    <div class="actions">
+                        <a href="/oauth-test.html" class="btn btn-primary">Try Again</a>
+                    </div>
+                `;
+                return;
+            }
+
+            // Save to localStorage
+            localStorage.setItem('accessToken', token);
+            localStorage.setItem('tokenType', type || 'Bearer');
+
+            // Decode JWT
+            const payload = parseJwt(token);
+
+            // Fetch user info
+            const userInfo = await getUserInfo(token);
+            if (userInfo) {
+                localStorage.setItem('user', JSON.stringify(userInfo));
+            }
+
+            // Display success
+            let html = `
+                <div class="info-card">
+                    <h3>Access Token</h3>
+                    <div class="token-display">
+                        <button class="copy-btn" onclick="copyToClipboard('${token}')">Copy</button>
+                        ${token}
+                    </div>
+                </div>
+            `;
+
+            if (payload) {
+                html += `
+                    <div class="info-card">
+                        <h3>Token Payload</h3>
+                        <div class="user-info">
+                            <div class="user-info-item">
+                                <label>Subject (User ID)</label>
+                                <value>${payload.sub || 'N/A'}</value>
+                            </div>
+                            <div class="user-info-item">
+                                <label>Issued At</label>
+                                <value>${payload.iat ? formatDate(payload.iat) : 'N/A'}</value>
+                            </div>
+                            <div class="user-info-item">
+                                <label>Expires At</label>
+                                <value>${payload.exp ? formatDate(payload.exp) : 'N/A'}</value>
+                            </div>
+                            <div class="user-info-item">
+                                <label>Issuer</label>
+                                <value>${payload.iss || 'N/A'}</value>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            if (userInfo) {
+                html += `
+                    <div class="info-card">
+                        <h3>User Information</h3>
+                        <div class="user-info">
+                            <div class="user-info-item">
+                                <label>Username</label>
+                                <value>${userInfo.username || 'N/A'}</value>
+                            </div>
+                            <div class="user-info-item">
+                                <label>Email</label>
+                                <value>${userInfo.email || 'N/A'}</value>
+                            </div>
+                            <div class="user-info-item">
+                                <label>First Name</label>
+                                <value>${userInfo.firstName || 'N/A'}</value>
+                            </div>
+                            <div class="user-info-item">
+                                <label>Last Name</label>
+                                <value>${userInfo.lastName || 'N/A'}</value>
+                            </div>
+                            <div class="user-info-item">
+                                <label>OAuth Provider</label>
+                                <value>${userInfo.oauthProvider || 'N/A'}</value>
+                            </div>
+                            <div class="user-info-item">
+                                <label>TOTP Enabled</label>
+                                <value>${userInfo.totpEnabled ? 'Yes' : 'No'}</value>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            html += `
+                <div class="actions">
+                    <a href="/oauth-test.html" class="btn btn-primary">Back to Login Page</a>
+                    <button class="btn btn-secondary" onclick="testApiCall()">Test API Call</button>
+                </div>
+            `;
+
+            document.getElementById('content').innerHTML = html;
+        }
+
+        async function testApiCall() {
+            const token = localStorage.getItem('accessToken');
+            if (!token) {
+                alert('No token found!');
+                return;
+            }
+
+            try {
+                const response = await fetch('http://localhost:8080/api/users/me', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    alert('API call successful! Check console for response.');
+                    console.log('User info:', data);
+                } else {
+                    alert(`API call failed with status: ${response.status}`);
+                }
+            } catch (e) {
+                alert('API call failed: ' + e.message);
+            }
+        }
+
+        // Run on page load
+        displaySuccess();
+    </script>
+</body>
+</html>

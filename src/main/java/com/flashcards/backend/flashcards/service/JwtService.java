@@ -69,7 +69,7 @@ public class JwtService {
                     .signWith(secretKey)
                     .compact();
 
-            log.debug("JWT token generated successfully for user: {}", user.getUsername());
+            log.info("JWT token generated successfully for user: {}", user.getUsername());
             return token;
         }
         throw new ServiceException(
@@ -102,14 +102,19 @@ public class JwtService {
             boolean isValid = isFalse(isTokenExpired(claims));
             log.debug("Token validation result: {}", isValid);
             return isValid;
-        } catch (JwtException | IllegalArgumentException e) {
+        } catch (JwtException | IllegalArgumentException | ServiceException e) {
             log.warn("Invalid JWT token: {}", e.getMessage());
             return false;
         }
     }
 
     public boolean isTokenExpired(String token) {
-        return isTokenExpired(extractClaims(token));
+        try {
+            return isTokenExpired(extractClaims(token));
+        } catch (ServiceException e) {
+            log.warn("Unable to check token expiration for invalid token: {}", e.getMessage());
+            return true; // Treat invalid tokens as expired/unusable
+        }
     }
 
     public long getExpirationMs() {

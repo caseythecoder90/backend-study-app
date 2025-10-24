@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OAuth2 Error</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 48px;
+            max-width: 600px;
+            width: 100%;
+        }
+
+        .error-header {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+
+        .error-icon {
+            width: 64px;
+            height: 64px;
+            background: #e53e3e;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 16px;
+        }
+
+        .x-mark {
+            width: 32px;
+            height: 32px;
+            color: white;
+        }
+
+        h1 {
+            color: #1a202c;
+            font-size: 28px;
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            color: #718096;
+            font-size: 16px;
+        }
+
+        .error-details {
+            background: #fed7d7;
+            border-left: 4px solid #e53e3e;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 24px;
+        }
+
+        .error-details h3 {
+            color: #c53030;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .error-details p {
+            color: #742a2a;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .troubleshooting {
+            background: #f7fafc;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 24px;
+        }
+
+        .troubleshooting h3 {
+            color: #2d3748;
+            font-size: 16px;
+            margin-bottom: 12px;
+        }
+
+        .troubleshooting ul {
+            color: #4a5568;
+            font-size: 14px;
+            line-height: 1.8;
+            list-style-position: inside;
+        }
+
+        .troubleshooting li {
+            margin-bottom: 8px;
+        }
+
+        .actions {
+            display: flex;
+            gap: 12px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5a67d8;
+        }
+
+        .btn-secondary {
+            background: #e2e8f0;
+            color: #2d3748;
+        }
+
+        .btn-secondary:hover {
+            background: #cbd5e0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="error-header">
+            <div class="error-icon">
+                <svg class="x-mark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </div>
+            <h1>Authentication Failed</h1>
+            <p class="subtitle">Unable to complete OAuth2 login</p>
+        </div>
+
+        <div class="error-details">
+            <h3>Error Details</h3>
+            <p id="errorMessage">An unknown error occurred during authentication.</p>
+        </div>
+
+        <div class="troubleshooting">
+            <h3>Possible Solutions:</h3>
+            <ul>
+                <li>Make sure you granted all required permissions</li>
+                <li>Check if your OAuth app credentials are correct</li>
+                <li>Verify redirect URIs are configured in Google/GitHub</li>
+                <li>Ensure your email is accessible from the OAuth provider</li>
+                <li>Try a different browser or clear your cache</li>
+                <li>Check the application logs for detailed error messages</li>
+            </ul>
+        </div>
+
+        <div class="actions">
+            <a href="/oauth-test.html" class="btn btn-primary">Try Again</a>
+            <button class="btn btn-secondary" onclick="window.location.href='http://localhost:8080'">Go to API Docs</button>
+        </div>
+    </div>
+
+    <script>
+        // Parse URL parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        const error = urlParams.get('error');
+
+        if (error) {
+            const errorMessages = {
+                'authentication_failed': 'The OAuth2 authentication process failed. This could be due to invalid credentials, denied permissions, or a configuration error.',
+                'email_not_found': 'Your OAuth provider did not provide an email address. Please ensure your email is visible in your OAuth provider account.',
+                'provider_not_supported': 'The OAuth provider you selected is not supported.',
+                'token_generation_failed': 'Failed to generate a JWT token after successful OAuth authentication.',
+                'user_disabled': 'Your account has been disabled. Please contact support.'
+            };
+
+            document.getElementById('errorMessage').textContent =
+                errorMessages[error] || `Error: ${error}`;
+        }
+    </script>
+</body>
+</html>

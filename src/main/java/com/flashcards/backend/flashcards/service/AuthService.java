@@ -6,6 +6,7 @@ import com.flashcards.backend.flashcards.dto.CreateUserDto;
 import com.flashcards.backend.flashcards.dto.LoginDto;
 import com.flashcards.backend.flashcards.dto.RecoveryCodeLoginDto;
 import com.flashcards.backend.flashcards.dto.RecoveryCodesDto;
+import com.flashcards.backend.flashcards.dto.RecoveryCodeStatusDto;
 import com.flashcards.backend.flashcards.dto.TotpSetupDto;
 import com.flashcards.backend.flashcards.dto.UserDto;
 import com.flashcards.backend.flashcards.exception.ErrorCode;
@@ -178,6 +179,29 @@ public class AuthService {
         userDao.save(user);
     }
 
+    /**
+     * Generates new recovery codes, hashes them, assigns them to the user, and saves the user.
+     * This method encapsulates the common recovery code generation logic used by both
+     * setupTotp() and regenerateRecoveryCodes().
+     *
+     * @param user the user to assign recovery codes to
+     * @return list of formatted recovery codes for display to the user
+     */
+    private List<String> generateAndAssignRecoveryCodes(User user) {
+        List<String> recoveryCodes = recoveryCodeService.generateRecoveryCodes();
+        List<String> hashedCodes = recoveryCodeService.hashRecoveryCodes(recoveryCodes);
+        List<String> formattedCodes = recoveryCodeService.formatCodesForDisplay(recoveryCodes);
+
+        LocalDateTime now = LocalDateTime.now();
+        user.setRecoveryCodeHashes(new HashSet<>(hashedCodes));
+        user.setRecoveryCodesGeneratedAt(now);
+        user.setRecoveryCodesUsedCount(0);
+        user.setUpdatedAt(now);
+        userDao.save(user);
+
+        return formattedCodes;
+    }
+
     public TotpSetupDto setupTotp(String userId) {
         log.info("Setting up TOTP for user: {}", sanitizeForLog(userId));
 
@@ -194,19 +218,10 @@ public class AuthService {
         String secret = totpService.generateSecret();
         String qrCodeDataUri = totpService.generateQrCodeImageUri(secret, user.getUsername());
 
-        List<String> recoveryCodes = recoveryCodeService.generateRecoveryCodes();
-        List<String> hashedCodes = recoveryCodeService.hashRecoveryCodes(recoveryCodes);
-        List<String> formattedCodes = recoveryCodeService.formatCodesForDisplay(recoveryCodes);
-
-        LocalDateTime now = LocalDateTime.now();
         user.setTotpSecret(secret);
-        user.setRecoveryCodeHashes(new HashSet<>(hashedCodes));
-        user.setRecoveryCodesGeneratedAt(now);
-        user.setRecoveryCodesUsedCount(0);
-        user.setUpdatedAt(now);
-        userDao.save(user);
+        List<String> formattedCodes = generateAndAssignRecoveryCodes(user);
 
-        log.info("TOTP setup completed for user: {} with {} recovery codes", sanitizeForLog(userId), recoveryCodes.size());
+        log.info("TOTP setup completed for user: {} with {} recovery codes", sanitizeForLog(userId), formattedCodes.size());
         return TotpSetupDto.builder()
                 .secret(secret)
                 .qrCodeDataUri(qrCodeDataUri)
@@ -307,13 +322,13 @@ public class AuthService {
         String accessToken = jwtService.generateToken(user);
         UserDto userDto = userMapper.toDto(user);
 
-        log.debug("User authenticated successfully with recovery code: {} (remaining codes: {})",
+        log.info("User authenticated successfully with recovery code: {} (remaining codes: {})",
                 sanitizeForLog(user.getUsername()), recoveryCodeService.getRemainingCodesCount(updatedCodes));
         return buildAuthResponse(accessToken, userDto, user.isTotpEnabled());
     }
 
     public RecoveryCodesDto regenerateRecoveryCodes(String userId) {
-        log.debug("Regenerating recovery codes for user: {}", sanitizeForLog(userId));
+        log.info("Regenerating recovery codes for user: {}", sanitizeForLog(userId));
 
         User user = userDao.findById(userId)
                 .orElseThrow(() -> new ServiceException(AUTH_CREDENTIALS_INVALID, ErrorCode.AUTH_INVALID_CREDENTIALS));
@@ -322,30 +337,21 @@ public class AuthService {
             throw new ServiceException(AUTH_RECOVERY_CODES_NOT_ENABLED, ErrorCode.AUTH_RECOVERY_CODES_NOT_ENABLED);
         }
 
-        List<String> newRecoveryCodes = recoveryCodeService.generateRecoveryCodes();
-        List<String> hashedCodes = recoveryCodeService.hashRecoveryCodes(newRecoveryCodes);
-        List<String> formattedCodes = recoveryCodeService.formatCodesForDisplay(newRecoveryCodes);
+        List<String> formattedCodes = generateAndAssignRecoveryCodes(user);
 
-        LocalDateTime now = LocalDateTime.now();
-        user.setRecoveryCodeHashes(new HashSet<>(hashedCodes));
-        user.setRecoveryCodesGeneratedAt(now);
-        user.setRecoveryCodesUsedCount(0);
-        user.setUpdatedAt(now);
-        userDao.save(user);
-
-        log.debug("Recovery codes regenerated for user: {} - {} new codes generated", sanitizeForLog(userId), newRecoveryCodes.size());
+        log.info("Recovery codes regenerated for user: {} - {} new codes generated", sanitizeForLog(userId), formattedCodes.size());
 
         return RecoveryCodesDto.builder()
                 .codes(formattedCodes)
                 .remainingCodes(formattedCodes.size())
                 .usedCodes(0)
-                .generatedAt(now)
+                .generatedAt(user.getRecoveryCodesGeneratedAt())
                 .instructions(RECOVERY_CODE_WARNING)
                 .build();
     }
 
-    public RecoveryCodesDto getRecoveryCodeStatus(String userId) {
-        log.debug("Getting recovery code status for user: {}", sanitizeForLog(userId));
+    public RecoveryCodeStatusDto getRecoveryCodeStatus(String userId) {
+        log.info("Getting recovery code status for user: {}", sanitizeForLog(userId));
 
         User user = userDao.findById(userId)
                 .orElseThrow(() -> new ServiceException(AUTH_CREDENTIALS_INVALID, ErrorCode.AUTH_INVALID_CREDENTIALS));
@@ -361,7 +367,7 @@ public class AuthService {
             warning = RECOVERY_CODE_LOW_WARNING.formatted(remainingCodes);
         }
 
-        return RecoveryCodesDto.builder()
+        return RecoveryCodeStatusDto.builder()
                 .remainingCodes(remainingCodes)
                 .usedCodes(user.getRecoveryCodesUsedCount())
                 .generatedAt(user.getRecoveryCodesGeneratedAt())

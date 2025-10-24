@@ -30,6 +30,7 @@ import static com.flashcards.backend.flashcards.constants.SecurityConstants.GCP_
 import static com.flashcards.backend.flashcards.constants.SecurityConstants.GOOGLE_CREDENTIALS_ENV_VAR;
 import static com.flashcards.backend.flashcards.constants.SecurityConstants.TEMP_DIR_PREFIX;
 import static com.flashcards.backend.flashcards.constants.SecurityConstants.VERTEX_AI_CREDENTIALS_URI_PROPERTY;
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 /**
  * ApplicationContextInitializer that handles Google Cloud credentials from base64-encoded environment variable.
@@ -44,7 +45,7 @@ public class GoogleCredentialsInitializer implements ApplicationContextInitializ
         ConfigurableEnvironment environment = applicationContext.getEnvironment();
         String base64Credentials = environment.getProperty(GOOGLE_CREDENTIALS_ENV_VAR);
 
-        if (StringUtils.isNotBlank(base64Credentials)) {
+        if (isNotBlank(base64Credentials)) {
             try {
                 // Decode the base64 credentials
                 byte[] decodedCredentials = Base64.getDecoder().decode(base64Credentials);

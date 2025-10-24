@@ -7,6 +7,7 @@ import com.flashcards.backend.flashcards.dto.LoginDto;
 import com.flashcards.backend.flashcards.dto.OAuth2ProviderDto;
 import com.flashcards.backend.flashcards.dto.RecoveryCodeLoginDto;
 import com.flashcards.backend.flashcards.dto.RecoveryCodesDto;
+import com.flashcards.backend.flashcards.dto.RecoveryCodeStatusDto;
 import com.flashcards.backend.flashcards.dto.TotpSetupDto;
 import com.flashcards.backend.flashcards.dto.TotpVerificationDto;
 import com.flashcards.backend.flashcards.service.AuthService;
@@ -29,6 +30,7 @@ import java.util.List;
 import static com.flashcards.backend.flashcards.constants.AuthConstants.OAUTH_AUTHORIZATION_BASE_PATH;
 import static com.flashcards.backend.flashcards.constants.AuthConstants.OAUTH_PROVIDER_GITHUB;
 import static com.flashcards.backend.flashcards.constants.AuthConstants.OAUTH_PROVIDER_GOOGLE;
+import static com.flashcards.backend.flashcards.util.SecurityUtils.sanitizeForLog;
 
 @Slf4j
 @RestController
@@ -42,11 +44,11 @@ public class AuthController {
     @AuthApiDocumentation.Register
     public ResponseEntity<AuthResponseDto> register(
             @AuthApiDocumentation.RegisterBody @Valid @RequestBody CreateUserDto createUserDto) {
-        log.info("POST /api/auth/register - Registering new user: {}", createUserDto.getUsername());
+        log.info("POST /api/auth/register - Registering new user: {}", sanitizeForLog(createUserDto.getUsername()));
 
         AuthResponseDto response = authService.register(createUserDto);
 
-        log.info("POST /api/auth/register - User registered successfully: {}", createUserDto.getUsername());
+        log.info("POST /api/auth/register - User registered successfully: {}", sanitizeForLog(createUserDto.getUsername()));
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
@@ -54,11 +56,11 @@ public class AuthController {
     @AuthApiDocumentation.Login
     public ResponseEntity<AuthResponseDto> login(
             @AuthApiDocumentation.LoginBody @Valid @RequestBody LoginDto loginDto) {
-        log.info("POST /api/auth/login - Login attempt for: {}", loginDto.getUsernameOrEmail());
+        log.info("POST /api/auth/login - Login attempt for: {}", sanitizeForLog(loginDto.getUsernameOrEmail()));
 
         AuthResponseDto response = authService.login(loginDto);
 
-        log.info("POST /api/auth/login - Login successful for: {}", loginDto.getUsernameOrEmail());
+        log.info("POST /api/auth/login - Login successful for: {}", sanitizeForLog(loginDto.getUsernameOrEmail()));
         return ResponseEntity.ok(response);
     }
 
@@ -66,11 +68,11 @@ public class AuthController {
     @AuthApiDocumentation.SetupTotp
     public ResponseEntity<TotpSetupDto> setupTotp(Authentication authentication) {
         String userId = authentication.getName();
-        log.info("POST /api/auth/totp/setup - Setting up TOTP for user: {}", userId);
+        log.info("POST /api/auth/totp/setup - Setting up TOTP for user: {}", sanitizeForLog(userId));
 
         TotpSetupDto response = authService.setupTotp(userId);
 
-        log.info("POST /api/auth/totp/setup - TOTP setup completed for user: {}", userId);
+        log.info("POST /api/auth/totp/setup - TOTP setup completed for user: {}", sanitizeForLog(userId));
         return ResponseEntity.ok(response);
     }
 
@@ -80,11 +82,11 @@ public class AuthController {
             @AuthApiDocumentation.TotpVerificationBody @Valid @RequestBody TotpVerificationDto totpVerificationDto,
             Authentication authentication) {
         String userId = authentication.getName();
-        log.info("POST /api/auth/totp/enable - Enabling TOTP for user: {}", userId);
+        log.info("POST /api/auth/totp/enable - Enabling TOTP for user: {}", sanitizeForLog(userId));
 
         AuthResponseDto response = authService.enableTotp(userId, totpVerificationDto.getTotpCode());
 
-        log.info("POST /api/auth/totp/enable - TOTP enabled successfully for user: {}", userId);
+        log.info("POST /api/auth/totp/enable - TOTP enabled successfully for user: {}", sanitizeForLog(userId));
         return ResponseEntity.ok(response);
     }
 
@@ -92,11 +94,11 @@ public class AuthController {
     @AuthApiDocumentation.DisableTotp
     public ResponseEntity<AuthResponseDto> disableTotp(Authentication authentication) {
         String userId = authentication.getName();
-        log.info("POST /api/auth/totp/disable - Disabling TOTP for user: {}", userId);
+        log.info("POST /api/auth/totp/disable - Disabling TOTP for user: {}", sanitizeForLog(userId));
 
         AuthResponseDto response = authService.disableTotp(userId);
 
-        log.info("POST /api/auth/totp/disable - TOTP disabled successfully for user: {}", userId);
+        log.info("POST /api/auth/totp/disable - TOTP disabled successfully for user: {}", sanitizeForLog(userId));
         return ResponseEntity.ok(response);
     }
 
@@ -104,11 +106,11 @@ public class AuthController {
     @AuthApiDocumentation.LoginWithRecoveryCode
     public ResponseEntity<AuthResponseDto> loginWithRecoveryCode(
             @AuthApiDocumentation.RecoveryCodeLoginBody @Valid @RequestBody RecoveryCodeLoginDto recoveryCodeLoginDto) {
-        log.info("POST /api/auth/login/recovery - Recovery code login attempt for: {}", recoveryCodeLoginDto.getUsernameOrEmail());
+        log.info("POST /api/auth/login/recovery - Recovery code login attempt for: {}", sanitizeForLog(recoveryCodeLoginDto.getUsernameOrEmail()));
 
         AuthResponseDto response = authService.loginWithRecoveryCode(recoveryCodeLoginDto);
 
-        log.info("POST /api/auth/login/recovery - Recovery code login successful for: {}", recoveryCodeLoginDto.getUsernameOrEmail());
+        log.info("POST /api/auth/login/recovery - Recovery code login successful for: {}", sanitizeForLog(recoveryCodeLoginDto.getUsernameOrEmail()));
         return ResponseEntity.ok(response);
     }
 
@@ -116,23 +118,23 @@ public class AuthController {
     @AuthApiDocumentation.RegenerateRecoveryCodes
     public ResponseEntity<RecoveryCodesDto> regenerateRecoveryCodes(Authentication authentication) {
         String userId = authentication.getName();
-        log.info("POST /api/auth/recovery-codes/regenerate - Regenerating recovery codes for user: {}", userId);
+        log.info("POST /api/auth/recovery-codes/regenerate - Regenerating recovery codes for user: {}", sanitizeForLog(userId));
 
         RecoveryCodesDto response = authService.regenerateRecoveryCodes(userId);
 
-        log.info("POST /api/auth/recovery-codes/regenerate - Recovery codes regenerated for user: {}", userId);
+        log.info("POST /api/auth/recovery-codes/regenerate - Recovery codes regenerated for user: {}", sanitizeForLog(userId));
         return ResponseEntity.ok(response);
     }
 
     @GetMapping("/recovery-codes/status")
     @AuthApiDocumentation.GetRecoveryCodeStatus
-    public ResponseEntity<RecoveryCodesDto> getRecoveryCodeStatus(Authentication authentication) {
+    public ResponseEntity<RecoveryCodeStatusDto> getRecoveryCodeStatus(Authentication authentication) {
         String userId = authentication.getName();
-        log.info("GET /api/auth/recovery-codes/status - Getting recovery code status for user: {}", userId);
+        log.info("GET /api/auth/recovery-codes/status - Getting recovery code status for user: {}", sanitizeForLog(userId));
 
-        RecoveryCodesDto response = authService.getRecoveryCodeStatus(userId);
+        RecoveryCodeStatusDto response = authService.getRecoveryCodeStatus(userId);
 
-        log.info("GET /api/auth/recovery-codes/status - Retrieved recovery code status for user: {}", userId);
+        log.info("GET /api/auth/recovery-codes/status - Retrieved recovery code status for user: {}", sanitizeForLog(userId));
         return ResponseEntity.ok(response);
     }
 
