@@ -11,6 +11,10 @@ import org.mapstruct.ReportingPolicy;
 
 import java.util.List;
 
+/**
+ * MapStruct mapper for converting between Flashcard entities and DTOs.
+ * Handles polymorphic content blocks (Text, Code, Image, Mermaid).
+ */
 @Mapper(
     componentModel = "spring",
     unmappedTargetPolicy = ReportingPolicy.IGNORE,
@@ -18,11 +22,8 @@ import java.util.List;
 )
 public interface FlashcardMapper {
 
+    // High-level flashcard mappings
     FlashcardDto toDto(Flashcard flashcard);
-
-    FlashcardDto.CardContentDto toCardContentDto(Flashcard.CardContent cardContent);
-
-    FlashcardDto.CodeBlockDto toCodeBlockDto(Flashcard.CodeBlock codeBlock);
 
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "difficulty", constant = "NOT_SET")
@@ -33,10 +34,6 @@ public interface FlashcardMapper {
     @Mapping(target = "updatedAt", expression = "java(java.time.LocalDateTime.now())")
     @Mapping(target = "lastStudiedAt", ignore = true)
     Flashcard toEntity(CreateFlashcardDto createFlashcardDto);
-
-    Flashcard.CardContent toCardContent(FlashcardDto.CardContentDto cardContentDto);
-
-    Flashcard.CodeBlock toCodeBlock(FlashcardDto.CodeBlockDto codeBlockDto);
 
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "difficulty", ignore = true)
@@ -49,4 +46,24 @@ public interface FlashcardMapper {
     void updateEntity(@MappingTarget Flashcard entity, FlashcardDto dto);
 
     List<FlashcardDto> toDtoList(List<Flashcard> flashcards);
+
+    // Card content mappings
+    FlashcardDto.CardContentDto toCardContentDto(Flashcard.CardContent cardContent);
+    Flashcard.CardContent toCardContent(FlashcardDto.CardContentDto cardContentDto);
+
+    // Content block mappings - Entity to DTO
+    FlashcardDto.TextBlockDto toTextBlockDto(Flashcard.TextBlock textBlock);
+    FlashcardDto.CodeBlockDto toCodeBlockDto(Flashcard.CodeBlock codeBlock);
+    FlashcardDto.ImageBlockDto toImageBlockDto(Flashcard.ImageBlock imageBlock);
+    FlashcardDto.MermaidBlockDto toMermaidBlockDto(Flashcard.MermaidBlock mermaidBlock);
+
+    // Content block mappings - DTO to Entity
+    Flashcard.TextBlock toTextBlock(FlashcardDto.TextBlockDto textBlockDto);
+    Flashcard.CodeBlock toCodeBlock(FlashcardDto.CodeBlockDto codeBlockDto);
+    Flashcard.ImageBlock toImageBlock(FlashcardDto.ImageBlockDto imageBlockDto);
+    Flashcard.MermaidBlock toMermaidBlock(FlashcardDto.MermaidBlockDto mermaidBlockDto);
+
+    // Polymorphic block list mappings
+    List<FlashcardDto.ContentBlockDto> toContentBlockDtoList(List<Flashcard.ContentBlock> blocks);
+    List<Flashcard.ContentBlock> toContentBlockList(List<FlashcardDto.ContentBlockDto> blockDtos);
 }

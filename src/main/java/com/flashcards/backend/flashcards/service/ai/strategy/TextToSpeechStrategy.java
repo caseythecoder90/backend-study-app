@@ -27,6 +27,7 @@ import static com.flashcards.backend.flashcards.constants.AIConstants.DEFAULT_AU
 import static com.flashcards.backend.flashcards.constants.AIConstants.DEFAULT_TTS_MODEL;
 import static com.flashcards.backend.flashcards.constants.AIConstants.MAX_AUDIO_TEXT_LENGTH;
 import static com.flashcards.backend.flashcards.constants.ErrorMessages.AI_TEXT_LENGTH_EXCEEDED;
+import static java.util.Objects.nonNull;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
 /**
@@ -55,16 +56,13 @@ public class TextToSpeechStrategy implements AIAudioOperationStrategy<AITextToSp
 
         String textToConvert = input.getText();
 
-        // If summary requested, generate it first
         if (Objects.equals(input.getOutputType(), AudioOutputType.SUMMARY)) {
             textToConvert = generateSummary(input.getText(), input.getSummaryWordCount());
             log.debug("Generated summary for TTS: {}", textToConvert);
         }
 
-        // Convert to speech
         byte[] audioBytes = convertToSpeech(textToConvert, input);
 
-        // Build response
         return AITextToSpeechResponseDto.builder()
                 .audioData(Base64.getEncoder().encodeToString(audioBytes))
                 .format(DEFAULT_AUDIO_FORMAT)
@@ -78,7 +76,7 @@ public class TextToSpeechStrategy implements AIAudioOperationStrategy<AITextToSp
     private String generateSummary(String text, Integer wordCount) {
         Map<String, Object> variables = Map.of(
                 "text", text,
-                "wordCount", Objects.nonNull(wordCount) ? wordCount : 250
+                "wordCount", nonNull(wordCount) ? wordCount : 250
         );
 
         PromptTemplate template = new PromptTemplate(AUDIO_SUMMARY_TEMPLATE);

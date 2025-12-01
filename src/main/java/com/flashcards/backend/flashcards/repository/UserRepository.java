@@ -1,6 +1,6 @@
 package com.flashcards.backend.flashcards.repository;
 
-import com.flashcards.backend.flashcards.model.Role;
+import com.flashcards.backend.flashcards.enums.Role;
 import com.flashcards.backend.flashcards.model.User;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;

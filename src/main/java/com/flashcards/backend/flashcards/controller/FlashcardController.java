@@ -4,13 +4,19 @@ import com.flashcards.backend.flashcards.annotation.FlashcardApiDocumentation;
 import com.flashcards.backend.flashcards.dto.CreateFlashcardDto;
 import com.flashcards.backend.flashcards.dto.FlashcardDto;
 import com.flashcards.backend.flashcards.model.Flashcard;
+import com.flashcards.backend.flashcards.service.DeckService;
 import com.flashcards.backend.flashcards.service.FlashcardService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -31,81 +37,98 @@ import java.util.Optional;
 @Tag(name = "Flashcard Management", description = "APIs for managing flashcards, study sessions, and learning progress")
 public class FlashcardController {
     private final FlashcardService flashcardService;
+    private final DeckService deckService;
 
     @GetMapping("/{id}")
     @FlashcardApiDocumentation.GetFlashcardById
     public ResponseEntity<FlashcardDto> getFlashcardById(
             @FlashcardApiDocumentation.FlashcardIdParam @PathVariable String id) {
-        log.debug("GET /api/flashcards/{} - Finding flashcard by id", id);
+        log.info("GET /api/flashcards/{} - Finding flashcard by id", id);
 
         Optional<FlashcardDto> flashcard = flashcardService.findById(id);
 
         return flashcard.map(flashcardDto -> {
-            log.debug("GET /api/flashcards/{} - Flashcard found", id);
+            log.info("GET /api/flashcards/{} - Flashcard found", id);
             return ResponseEntity.ok(flashcardDto);
         }).orElseGet(() -> {
-            log.debug("GET /api/flashcards/{} - Flashcard not found", id);
+            log.info("GET /api/flashcards/{} - Flashcard not found", id);
             return ResponseEntity.notFound().build();
         });
     }
 
     @GetMapping("/deck/{deckId}")
     @FlashcardApiDocumentation.GetFlashcardsByDeck
-    public ResponseEntity<List<FlashcardDto>> getFlashcardsByDeck(
-            @FlashcardApiDocumentation.DeckIdParam @PathVariable String deckId) {
-        log.debug("GET /api/flashcards/deck/{} - Finding flashcards by deck", deckId);
+    public ResponseEntity<Page<FlashcardDto>> getFlashcardsByDeck(
+            @FlashcardApiDocumentation.DeckIdParam @PathVariable String deckId,
+            Authentication authentication,
+            @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
+        String userId = authentication.getName();
+        log.info("GET /api/flashcards/deck/{} - Finding flashcards by deck for user: {}", deckId, userId);
 
-        List<FlashcardDto> flashcards = flashcardService.findByDeckId(deckId);
+        deckService.validateDeckBelongsToUser(deckId, userId);
 
-        log.debug("GET /api/flashcards/deck/{} - Found {} flashcards", deckId, flashcards.size());
+        Page<FlashcardDto> flashcards = flashcardService.findByDeckId(deckId, pageable);
+
+        log.info("GET /api/flashcards/deck/{} - Found {} flashcards (page {} of {})",
+                deckId, flashcards.getNumberOfElements(), flashcards.getNumber() + 1, flashcards.getTotalPages());
         return ResponseEntity.ok(flashcards);
     }
 
     @GetMapping("/user/{userId}")
     @FlashcardApiDocumentation.GetFlashcardsByUser
-    public ResponseEntity<List<FlashcardDto>> getFlashcardsByUser(
-            @FlashcardApiDocumentation.UserIdParam @PathVariable String userId) {
-        log.debug("GET /api/flashcards/user/{} - Finding flashcards by user", userId);
+    public ResponseEntity<Page<FlashcardDto>> getFlashcardsByUser(
+            @FlashcardApiDocumentation.UserIdParam @PathVariable String userId,
+            @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
+        log.info("GET /api/flashcards/user/{} - Finding flashcards by user", userId);
 
-        List<FlashcardDto> flashcards = flashcardService.findByUserId(userId);
+        Page<FlashcardDto> flashcards = flashcardService.findByUserId(userId, pageable);
 
-        log.debug("GET /api/flashcards/user/{} - Found {} flashcards", userId, flashcards.size());
+        log.info("GET /api/flashcards/user/{} - Found {} flashcards (page {} of {})",
+                userId, flashcards.getNumberOfElements(), flashcards.getNumber() + 1, flashcards.getTotalPages());
         return ResponseEntity.ok(flashcards);
     }
 
     @GetMapping("/deck/{deckId}/difficulty/{difficulty}")
     @FlashcardApiDocumentation.GetFlashcardsByDeck
-    public ResponseEntity<List<FlashcardDto>> getFlashcardsByDeckAndDifficulty(
+    public ResponseEntity<Page<FlashcardDto>> getFlashcardsByDeckAndDifficulty(
             @FlashcardApiDocumentation.DeckIdParam @PathVariable String deckId,
-            @FlashcardApiDocumentation.DifficultyParam @PathVariable Flashcard.DifficultyLevel difficulty) {
-        log.debug("GET /api/flashcards/deck/{}/difficulty/{} - Finding flashcards by deck and difficulty", deckId, difficulty);
+            @FlashcardApiDocumentation.DifficultyParam @PathVariable Flashcard.DifficultyLevel difficulty,
+            @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
+        log.info("GET /api/flashcards/deck/{}/difficulty/{} - Finding flashcards by deck and difficulty", deckId, difficulty);
 
-        List<FlashcardDto> flashcards = flashcardService.findByDeckIdAndDifficulty(deckId, difficulty);
+        Page<FlashcardDto> flashcards = flashcardService.findByDeckIdAndDifficulty(deckId, difficulty, pageable);
 
-        log.debug("GET /api/flashcards/deck/{}/difficulty/{} - Found {} flashcards", deckId, difficulty, flashcards.size());
+        log.info("GET /api/flashcards/deck/{}/difficulty/{} - Found {} flashcards (page {} of {})",
+                deckId, difficulty, flashcards.getNumberOfElements(), flashcards.getNumber() + 1, flashcards.getTotalPages());
         return ResponseEntity.ok(flashcards);
     }
 
     @GetMapping("/search")
     @FlashcardApiDocumentation.SearchFlashcards
-    public ResponseEntity<List<FlashcardDto>> searchFlashcardsByTag(
-            @FlashcardApiDocumentation.TagsParam @RequestParam String tag) {
-        log.debug("GET /api/flashcards/search?tag={} - Searching flashcards by tag", tag);
+    public ResponseEntity<Page<FlashcardDto>> searchFlashcardsByTag(
+            @FlashcardApiDocumentation.TagsParam @RequestParam String tag,
+            Authentication authentication,
+            @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
+        String userId = authentication.getName();
+        log.info("GET /api/flashcards/search?tag={} - Searching flashcards by tag for user: {}", tag, userId);
 
-        List<FlashcardDto> flashcards = flashcardService.findByTagsContaining(tag);
+        Page<FlashcardDto> flashcards = flashcardService.findByUserIdAndTagsContaining(userId, tag, pageable);
 
-        log.debug("GET /api/flashcards/search - Found {} flashcards with tag: {}", flashcards.size(), tag);
+        log.info("GET /api/flashcards/search - Found {} flashcards with tag: {} for user: {} (page {} of {})",
+                flashcards.getNumberOfElements(), tag, userId, flashcards.getNumber() + 1, flashcards.getTotalPages());
         return ResponseEntity.ok(flashcards);
     }
 
-    @GetMapping
+    @GetMapping("/admin/all")
     @FlashcardApiDocumentation.SearchFlashcards
-    public ResponseEntity<List<FlashcardDto>> getAllFlashcards() {
-        log.debug("GET /api/flashcards - Finding all flashcards");
+    public ResponseEntity<Page<FlashcardDto>> getAllFlashcards(
+            @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
+        log.info("GET /api/flashcards/admin/all - Finding all flashcards (admin)");
 
-        List<FlashcardDto> flashcards = flashcardService.findAll();
+        Page<FlashcardDto> flashcards = flashcardService.findAll(pageable);
 
-        log.debug("GET /api/flashcards - Found {} flashcards", flashcards.size());
+        log.info("GET /api/flashcards/admin/all - Found {} flashcards (page {} of {})",
+                flashcards.getNumberOfElements(), flashcards.getNumber() + 1, flashcards.getTotalPages());
         return ResponseEntity.ok(flashcards);
     }
 
@@ -170,16 +193,16 @@ public class FlashcardController {
         return ResponseEntity.noContent().build();
     }
 
-    @PostMapping("/{id}/study")
+    @PutMapping("/{id}/study")
     @FlashcardApiDocumentation.UpdateStudyProgress
     public ResponseEntity<Void> updateStudyProgress(
             @FlashcardApiDocumentation.FlashcardIdParam @PathVariable String id,
             @FlashcardApiDocumentation.StudyProgressBody @RequestParam boolean correct) {
-        log.info("POST /api/flashcards/{}/study - Recording study result: {}", id, correct ? "correct" : "incorrect");
+        log.info("PUT /api/flashcards/{}/study - Recording study result: {}", id, correct ? "correct" : "incorrect");
 
         flashcardService.updateStudyStats(id, correct);
 
-        log.info("POST /api/flashcards/{}/study - Study progress updated successfully", id);
+        log.info("PUT /api/flashcards/{}/study - Study progress updated successfully", id);
         return ResponseEntity.ok().build();
     }
 
@@ -187,22 +210,22 @@ public class FlashcardController {
     @FlashcardApiDocumentation.GetFlashcardCount
     public ResponseEntity<Long> getFlashcardCountByDeck(
             @FlashcardApiDocumentation.DeckIdParam @PathVariable String deckId) {
-        log.debug("GET /api/flashcards/deck/{}/count - Getting flashcard count for deck", deckId);
+        log.info("GET /api/flashcards/deck/{}/count - Getting flashcard count for deck", deckId);
 
         long count = flashcardService.countByDeckId(deckId);
 
-        log.debug("GET /api/flashcards/deck/{}/count - Found {} flashcards", deckId, count);
+        log.info("GET /api/flashcards/deck/{}/count - Found {} flashcards", deckId, count);
         return ResponseEntity.ok(count);
     }
 
-    @GetMapping("/count")
+    @GetMapping("/admin/count")
     @FlashcardApiDocumentation.GetFlashcardCount
     public ResponseEntity<Long> getTotalFlashcardCount() {
-        log.debug("GET /api/flashcards/count - Getting total flashcard count");
+        log.info("GET /api/flashcards/admin/count - Getting total flashcard count");
 
         long count = flashcardService.countAll();
 
-        log.debug("GET /api/flashcards/count - Total flashcards: {}", count);
+        log.info("GET /api/flashcards/admin/count - Total flashcards: {}", count);
         return ResponseEntity.ok(count);
     }
 }

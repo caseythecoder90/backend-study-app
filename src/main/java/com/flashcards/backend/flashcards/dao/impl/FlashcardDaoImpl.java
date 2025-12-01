@@ -7,8 +7,11 @@ import com.flashcards.backend.flashcards.model.Flashcard;
 import com.flashcards.backend.flashcards.repository.FlashcardRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.DuplicateKeyException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 
 import static com.flashcards.backend.flashcards.constants.ErrorMessages.DAO_COUNT_BY_FIELD_ERROR;
@@ -36,6 +39,7 @@ import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -50,7 +54,7 @@ public class FlashcardDaoImpl implements FlashcardDao {
     public Optional<Flashcard> findById(String id) {
         return executeWithExceptionHandling(() ->
                 Optional.ofNullable(id)
-                        .filter(validId -> isNotBlank(validId))
+                        .filter(StringUtils::isNotBlank)
                         .flatMap(flashcardRepository::findById),
                 ErrorCode.DAO_FIND_ERROR,
                 DAO_FIND_BY_ID_ERROR.formatted(ENTITY_FLASHCARD, id)
@@ -61,7 +65,7 @@ public class FlashcardDaoImpl implements FlashcardDao {
     public List<Flashcard> findByDeckId(String deckId) {
         return executeWithExceptionHandling(() ->
                 Optional.ofNullable(deckId)
-                        .filter(validDeckId -> isNotBlank(validDeckId))
+                        .filter(StringUtils::isNotBlank)
                         .map(flashcardRepository::findByDeckId)
                         .orElse(Collections.emptyList()),
                 ErrorCode.DAO_FIND_ERROR,
@@ -73,7 +77,7 @@ public class FlashcardDaoImpl implements FlashcardDao {
     public List<Flashcard> findByUserId(String userId) {
         return executeWithExceptionHandling(() ->
                 Optional.ofNullable(userId)
-                        .filter(validUserId -> isNotBlank(validUserId))
+                        .filter(StringUtils::isNotBlank)
                         .map(flashcardRepository::findByUserId)
                         .orElse(Collections.emptyList()),
                 ErrorCode.DAO_FIND_ERROR,
@@ -95,7 +99,7 @@ public class FlashcardDaoImpl implements FlashcardDao {
     public List<Flashcard> findByTagsContaining(String tag) {
         return executeWithExceptionHandling(() ->
                 Optional.ofNullable(tag)
-                        .filter(validTag -> isNotBlank(validTag))
+                        .filter(StringUtils::isNotBlank)
                         .map(flashcardRepository::findByTagsContaining)
                         .orElse(Collections.emptyList()),
                 ErrorCode.DAO_FIND_ERROR,
@@ -107,6 +111,59 @@ public class FlashcardDaoImpl implements FlashcardDao {
     public List<Flashcard> findAll() {
         return executeWithExceptionHandling(
                 flashcardRepository::findAll,
+                ErrorCode.DAO_FIND_ERROR,
+                DAO_FIND_ALL_ERROR.formatted("flashcards")
+        );
+    }
+
+    @Override
+    public Page<Flashcard> findByUserId(String userId, Pageable pageable) {
+        return executeWithExceptionHandling(() ->
+                Optional.ofNullable(userId)
+                        .filter(StringUtils::isNotBlank)
+                        .map(id -> flashcardRepository.findByUserId(id, pageable))
+                        .orElse(Page.empty()),
+                ErrorCode.DAO_FIND_ERROR,
+                DAO_FIND_BY_FIELD_ERROR.formatted(ENTITY_FLASHCARD, "userId", userId)
+        );
+    }
+
+    @Override
+    public Page<Flashcard> findByDeckId(String deckId, Pageable pageable) {
+        return executeWithExceptionHandling(() ->
+                Optional.ofNullable(deckId)
+                        .filter(StringUtils::isNotBlank)
+                        .map(id -> flashcardRepository.findByDeckId(id, pageable))
+                        .orElse(Page.empty()),
+                ErrorCode.DAO_FIND_ERROR,
+                DAO_FIND_BY_FIELD_ERROR.formatted(ENTITY_FLASHCARD, "deckId", deckId)
+        );
+    }
+
+    @Override
+    public Page<Flashcard> findByDeckIdAndDifficulty(String deckId, Flashcard.DifficultyLevel difficulty, Pageable pageable) {
+        return executeWithExceptionHandling(() -> {
+            if (isBlank(deckId) || isNull(difficulty)) {
+                return Page.empty();
+            }
+            return flashcardRepository.findByDeckIdAndDifficulty(deckId, difficulty, pageable);
+        }, ErrorCode.DAO_FIND_ERROR, DAO_FIND_BY_FIELD_ERROR.formatted(ENTITY_FLASHCARD, "deck and difficulty", deckId + "," + difficulty));
+    }
+
+    @Override
+    public Page<Flashcard> findByUserIdAndTagsContaining(String userId, String tag, Pageable pageable) {
+        return executeWithExceptionHandling(() -> {
+            if (isBlank(userId) || isBlank(tag)) {
+                return Page.empty();
+            }
+            return flashcardRepository.findByUserIdAndTagsContaining(userId, tag, pageable);
+        }, ErrorCode.DAO_FIND_ERROR, DAO_FIND_BY_FIELD_ERROR.formatted(ENTITY_FLASHCARD, "userId and tag", userId + "," + tag));
+    }
+
+    @Override
+    public Page<Flashcard> findAll(Pageable pageable) {
+        return executeWithExceptionHandling(
+                () -> flashcardRepository.findAll(pageable),
                 ErrorCode.DAO_FIND_ERROR,
                 DAO_FIND_ALL_ERROR.formatted("flashcards")
         );
@@ -156,11 +213,10 @@ public class FlashcardDaoImpl implements FlashcardDao {
 
             LocalDateTime now = LocalDateTime.now();
             List<Flashcard> toSave = flashcards.stream()
-                    .filter(flashcard -> nonNull(flashcard))
-                    .map(f -> {
+                    .filter(Objects::nonNull)
+                    .peek(f -> {
                         f.setCreatedAt(now);
                         f.setUpdatedAt(now);
-                        return f;
                     })
                     .collect(Collectors.toList());
 
@@ -172,7 +228,7 @@ public class FlashcardDaoImpl implements FlashcardDao {
     public void deleteById(String id) {
         executeWithExceptionHandling(() -> {
             Optional.ofNullable(id)
-                    .filter(validId -> isNotBlank(validId))
+                    .filter(StringUtils::isNotBlank)
                     .ifPresent(flashcardRepository::deleteById);
             return null;
         }, ErrorCode.DAO_DELETE_ERROR, DAO_DELETE_ERROR.formatted(ENTITY_FLASHCARD, id));
@@ -182,7 +238,7 @@ public class FlashcardDaoImpl implements FlashcardDao {
     public void deleteByDeckId(String deckId) {
         executeWithExceptionHandling(() -> {
             Optional.ofNullable(deckId)
-                    .filter(validDeckId -> isNotBlank(validDeckId))
+                    .filter(StringUtils::isNotBlank)
                     .ifPresent(flashcardRepository::deleteByDeckId);
             return null;
         }, ErrorCode.DAO_DELETE_ERROR, DAO_DELETE_BY_FIELD_ERROR.formatted(ENTITY_FLASHCARD, "deckId", deckId));
@@ -192,7 +248,7 @@ public class FlashcardDaoImpl implements FlashcardDao {
     public long countByDeckId(String deckId) {
         return executeWithExceptionHandling(() ->
                 Optional.ofNullable(deckId)
-                        .filter(validDeckId -> isNotBlank(validDeckId))
+                        .filter(StringUtils::isNotBlank)
                         .map(flashcardRepository::countByDeckId)
                         .orElse(0L),
                 ErrorCode.DAO_FIND_ERROR,

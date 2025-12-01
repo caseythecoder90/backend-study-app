@@ -1,4 +1,4 @@
-package com.flashcards.backend.flashcards.model;
+package com.flashcards.backend.flashcards.enums;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;

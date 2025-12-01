@@ -1,6 +1,6 @@
 package com.flashcards.backend.flashcards.dao;
 
-import com.flashcards.backend.flashcards.model.Role;
+import com.flashcards.backend.flashcards.enums.Role;
 import com.flashcards.backend.flashcards.model.User;
 
 import java.util.List;

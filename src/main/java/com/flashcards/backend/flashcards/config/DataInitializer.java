@@ -1,12 +1,11 @@
 package com.flashcards.backend.flashcards.config;
 
 import com.flashcards.backend.flashcards.dao.UserDao;
-import com.flashcards.backend.flashcards.model.Role;
+import com.flashcards.backend.flashcards.enums.Role;
 import com.flashcards.backend.flashcards.model.User;
 import com.flashcards.backend.flashcards.service.PasswordService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
@@ -14,12 +13,9 @@ import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
 import java.util.HashSet;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
-import static com.flashcards.backend.flashcards.constants.ErrorMessages.INIT_ADMIN_CREATION_FAILED;
-import static com.flashcards.backend.flashcards.constants.ErrorMessages.INIT_ADMIN_UPGRADE_FAILED;
 import static org.apache.commons.lang3.BooleanUtils.isFalse;
 import static org.apache.logging.log4j.util.Strings.isNotBlank;
 

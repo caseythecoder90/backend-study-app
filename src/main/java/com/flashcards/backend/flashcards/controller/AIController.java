@@ -48,7 +48,7 @@ public class AIController {
     private final TextToImageStrategy textToImageStrategy;
 
     @PostMapping("/flashcards/generate-text")
-    @PreAuthorize("hasRole('USER')")
+    @PreAuthorize("hasRole('USER')") // do I need this if I am already having request level authentication for most endpoints? incuding this one
     @AIApiDocumentation.GenerateFlashcardsFromText
     public ResponseEntity<List<FlashcardDto>> generateFlashcardsFromText(
             @Valid @RequestBody AIGenerateRequestDto request) {

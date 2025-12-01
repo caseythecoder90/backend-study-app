@@ -75,6 +75,12 @@ spring:
               temperature: ${VERTEX_AI_TEMPERATURE:0.7}
               max-output-tokens: ${VERTEX_AI_MAX_TOKENS:2000}
 
+# Spring Retry Configuration
+retry:
+  max-attempts: 3
+  backoff-delay: 100  # milliseconds
+  backoff-multiplier: 2.0
+
 server:
   port: 8080
   error:
@@ -112,6 +118,10 @@ jwt:
 
 app:
   name: ${APP_NAME:Flashcards}
+
+totp:
+  code-length: 6
+  time-step: 30  # seconds
 
 oauth:
   success-redirect-url: ${OAUTH_SUCCESS_REDIRECT_URL:https://backend-study-app-production.up.railway.app/auth/success}

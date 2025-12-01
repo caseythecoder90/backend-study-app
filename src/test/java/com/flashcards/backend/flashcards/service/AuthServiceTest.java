@@ -4,7 +4,7 @@ import com.flashcards.backend.flashcards.dao.UserDao;
 import com.flashcards.backend.flashcards.dto.*;
 import com.flashcards.backend.flashcards.exception.ServiceException;
 import com.flashcards.backend.flashcards.mapper.UserMapper;
-import com.flashcards.backend.flashcards.model.Role;
+import com.flashcards.backend.flashcards.enums.Role;
 import com.flashcards.backend.flashcards.model.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;

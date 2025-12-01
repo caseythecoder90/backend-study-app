@@ -73,11 +73,12 @@ public class AIConstants {
     public static final String JSON_FIELD_BACK = "back";
     public static final String JSON_FIELD_HINT = "hint";
     public static final String JSON_FIELD_TEXT = "text";
-    public static final String JSON_FIELD_TYPE = "type";
     public static final String JSON_FIELD_CODE_BLOCKS = "codeBlocks";
     public static final String JSON_FIELD_CODE = "code";
     public static final String JSON_FIELD_FILE_NAME = "fileName";
     public static final String JSON_FIELD_HIGHLIGHTED = "highlighted";
+    public static final String JSON_FIELD_BLOCKS = "blocks";
+    public static final String JSON_FIELD_CONTENT = "content";
 
     // Vertex AI Specific
     public static final String DEFAULT_VERTEX_LOCATION = "us-central1";
@@ -205,36 +206,44 @@ public class AIConstants {
 
     // Prompts
     public static final String FLASHCARD_JSON_SCHEMA = """
-            Return ONLY a valid JSON array with this exact structure (no additional text, no markdown, no explanations):
-            [
-              {{
-                "front": {{
-                  "text": "Question or prompt text",
-                  "codeBlocks": [
-                    {{
-                      "language": "java",
-                      "code": "example code",
-                      "fileName": "optional filename",
-                      "highlighted": false
-                    }}
-                  ],
-                  "type": "TEXT_ONLY"
-                }},
-                "back": {{
-                  "text": "Answer or explanation text",
-                  "codeBlocks": [],
-                  "type": "TEXT_ONLY"
-                }},
-                "hint": "Optional helpful hint",
-                "tags": ["tag1", "tag2"],
-                "difficulty": "MEDIUM"
-              }}
-            ]
+            Return ONLY a valid JSON object with this exact structure:
+            {{
+              "flashcards": [
+                {{
+                  "front": {{
+                    "blocks": [
+                      {{
+                        "type": "TEXT",
+                        "content": "Question or prompt text"
+                      }},
+                      {{
+                        "type": "CODE",
+                        "language": "java",
+                        "code": "example code",
+                        "fileName": "optional",
+                        "highlighted": false,
+                        "highlightedLines": [1, 2]
+                      }}
+                    ]
+                  }},
+                  "back": {{
+                    "blocks": [
+                      {{
+                        "type": "TEXT",
+                        "content": "Answer text"
+                      }}
+                    ]
+                  }},
+                  "hint": "Optional hint",
+                  "tags": ["tag1", "tag2"],
+                  "difficulty": "MEDIUM"
+                }}
+              ]
+            }}
 
-            Valid difficulty levels: EASY, MEDIUM, HARD, NOT_SET
-            Valid content types: TEXT_ONLY, CODE_ONLY, MIXED
-
-            CRITICAL: Ensure the JSON is complete and properly closed with all required braces and brackets.
+            Valid difficulty: EASY, MEDIUM, HARD, NOT_SET
+            Valid block types: TEXT, CODE
+            CRITICAL: Ensure complete, valid JSON.
             """;
 
     public static final String FLASHCARD_GENERATION_TEMPLATE = """

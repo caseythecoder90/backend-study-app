@@ -2,7 +2,7 @@ package com.flashcards.backend.flashcards.service;
 
 import com.flashcards.backend.flashcards.exception.ErrorCode;
 import com.flashcards.backend.flashcards.exception.ServiceException;
-import com.flashcards.backend.flashcards.model.Role;
+import com.flashcards.backend.flashcards.enums.Role;
 import com.flashcards.backend.flashcards.model.User;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
@@ -21,7 +21,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import static com.flashcards.backend.flashcards.constants.ErrorMessages.AUTH_TOKEN_EXTRACTION_FAILED;
-import static com.flashcards.backend.flashcards.constants.ErrorMessages.AUTH_TOKEN_INVALID;
 import static com.flashcards.backend.flashcards.constants.ErrorMessages.AUTH_USER_ID_NULL;
 import static com.flashcards.backend.flashcards.constants.ErrorMessages.AUTH_USER_NULL;
 import static com.flashcards.backend.flashcards.constants.JwtConstants.JWT_CLAIM_AUTHORITIES;

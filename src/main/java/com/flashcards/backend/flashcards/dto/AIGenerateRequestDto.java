@@ -23,7 +23,7 @@ public class AIGenerateRequestDto {
     private String userId;
 
     @NotBlank(message = "Text content is required for AI generation")
-    @Size(min = 50, max = 100000, message = "Text must be between 50 and 10000 characters")
+    @Size(min = 50, max = 100000, message = "Text must be between 50 and 100000 characters")
     private String text;
 
     @Min(value = 1, message = "Count must be at least 1")

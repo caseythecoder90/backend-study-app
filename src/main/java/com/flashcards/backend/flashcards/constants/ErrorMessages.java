@@ -27,6 +27,18 @@ public class ErrorMessages {
     public static final String SERVICE_AUTHORIZATION_FAILED = "User %s is not authorized to %s";
     public static final String SERVICE_AI_GENERATION_FAILED = "Failed to generate flashcards from text: %s";
     public static final String SERVICE_OPERATION_FAILED = "Failed to %s %s";
+    public static final String SERVICE_DECK_OWNERSHIP_DENIED = "Deck does not belong to user";
+
+    // Validation Messages
+    public static final String VALIDATION_DIFFICULTY_LEVEL_NULL = "Difficulty level cannot be null";
+    public static final String VALIDATION_ID_BLANK = "ID cannot be blank";
+    public static final String VALIDATION_TAG_BLANK = "Tag cannot be blank";
+    public static final String VALIDATION_CREATION_DATA_NULL = "%s creation data cannot be null";
+    public static final String VALIDATION_DECK_ID_REQUIRED = "Deck ID is required";
+    public static final String VALIDATION_USER_ID_REQUIRED = "User ID is required";
+    public static final String VALIDATION_FRONT_CONTENT_REQUIRED = "Front content is required";
+    public static final String VALIDATION_BACK_CONTENT_REQUIRED = "Back content is required";
+    public static final String VALIDATION_DATA_NULL = "%s data cannot be null";
 
     // Controller Layer Error Messages
     public static final String CONTROLLER_INVALID_REQUEST = "Invalid request: %s";
@@ -79,6 +91,29 @@ public class ErrorMessages {
     public static final String ENTITY_DECK = "Deck";
     public static final String ENTITY_FLASHCARD = "Flashcard";
     public static final String ENTITY_STUDY_SESSION = "Study Session";
+    public static final String ENTITY_DECKS = "decks";
+    public static final String ENTITY_FLASHCARDS = "flashcards";
+
+    // Common Operation Names (for SERVICE_OPERATION_FAILED formatting)
+    public static final String OPERATION_FIND = "find";
+    public static final String OPERATION_FIND_BY_DECK = "find by deck";
+    public static final String OPERATION_FIND_BY_USER = "find by user";
+    public static final String OPERATION_FIND_BY_TAG = "find by tag";
+    public static final String OPERATION_FIND_BY_CATEGORY = "find by category";
+    public static final String OPERATION_FIND_BY_USER_AND_VISIBILITY = "find by user and visibility";
+    public static final String OPERATION_FIND_PUBLIC = "find public";
+    public static final String OPERATION_FIND_ALL = "find all";
+    public static final String OPERATION_FIND_BY_DECK_AND_DIFFICULTY = "find by deck and difficulty";
+    public static final String OPERATION_FIND_BY_USER_AND_TAG = "find by user and tag";
+    public static final String OPERATION_CREATE = "create";
+    public static final String OPERATION_CREATE_MULTIPLE = "create multiple";
+    public static final String OPERATION_UPDATE = "update";
+    public static final String OPERATION_UPDATE_STUDY_STATS = "update study stats for";
+    public static final String OPERATION_DELETE = "delete";
+    public static final String OPERATION_DELETE_BY_DECK = "delete by deck";
+    public static final String OPERATION_COUNT = "count";
+    public static final String OPERATION_COUNT_BY_DECK = "count by deck";
+    public static final String OPERATION_COUNT_ALL = "count all";
 
     // Encryption Error Messages
     public static final String ENCRYPTION_FAILED = "Failed to encrypt text: %s";
@@ -165,6 +200,22 @@ public class ErrorMessages {
     public static final String HANDLER_PARAMETER_TYPE_EXPECTED = "Expected type%s %s";
     public static final String HANDLER_PARAMETER_TYPE_GOT = "got%s %s";
     public static final String HANDLER_SUPPORTED_METHODS_NONE = "none";
+
+    // Image Service Error Messages
+    public static final String IMAGE_FILE_EMPTY = "Uploaded file is empty";
+    public static final String IMAGE_FILE_NULL = "No file uploaded";
+    public static final String IMAGE_SIZE_EXCEEDED = "Image size exceeds maximum allowed size of %s MB";
+    public static final String IMAGE_FORMAT_NOT_SUPPORTED = "Image format '%s' is not supported. Allowed formats: %s";
+    public static final String IMAGE_UPLOAD_FAILED = "Failed to upload image: %s";
+    public static final String IMAGE_DOWNLOAD_FAILED = "Failed to download image with id %s: %s";
+    public static final String IMAGE_NOT_FOUND = "Image not found with id: %s";
+    public static final String IMAGE_DELETE_FAILED = "Failed to delete image with id %s: %s";
+    public static final String IMAGE_STORAGE_ERROR = "Image storage error: %s";
+    public static final String IMAGE_RETRIEVAL_ERROR = "Image retrieval error: %s";
+    public static final String IMAGE_INVALID_ID = "Invalid image ID: %s";
+
+    // Entity Names
+    public static final String ENTITY_IMAGE = "Image";
 
     private ErrorMessages() {
         // Private constructor to prevent instantiation

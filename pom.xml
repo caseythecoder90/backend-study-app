@@ -66,6 +66,16 @@
 			<artifactId>spring-boot-starter-oauth2-client</artifactId>
 		</dependency>
 
+		<!-- Spring Retry for resilient operations -->
+		<dependency>
+			<groupId>org.springframework.retry</groupId>
+			<artifactId>spring-retry</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-aop</artifactId>
+		</dependency>
+
 		<!-- Jasypt for password encryption -->
 		<dependency>
 			<groupId>com.github.ulisesbocchio</groupId>

@@ -14,6 +14,7 @@ import org.springframework.ai.chat.prompt.ChatOptions;
 import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.ai.anthropic.AnthropicChatOptions;
 import org.springframework.ai.openai.OpenAiChatOptions;
+import org.springframework.ai.openai.api.OpenAiApi.ChatCompletionRequest.ResponseFormat;
 import org.springframework.ai.vertexai.gemini.VertexAiGeminiChatOptions;
 import org.springframework.stereotype.Service;
 
@@ -24,7 +25,9 @@ import static com.flashcards.backend.flashcards.constants.AIConstants.DEFAULT_TE
 import static com.flashcards.backend.flashcards.constants.ErrorMessages.AI_ALL_MODELS_UNAVAILABLE;
 import static com.flashcards.backend.flashcards.constants.ErrorMessages.AI_MODEL_UNAVAILABLE_FALLBACK_DISABLED;
 import static com.flashcards.backend.flashcards.constants.ErrorMessages.AI_VISION_NOT_SUPPORTED;
+import static java.util.Objects.nonNull;
 import static org.apache.commons.lang3.BooleanUtils.isFalse;
+import static org.apache.commons.lang3.BooleanUtils.isTrue;
 
 /**
  * Central orchestrator for AI operations.
@@ -52,9 +55,9 @@ public class AIExecutionService {
         
         strategy.validateInput(input);
         
-        AIModelEnum selectedModel = Objects.nonNull(model) ? model : strategy.getDefaultModel();
+        AIModelEnum selectedModel = nonNull(model) ? model : strategy.getDefaultModel();
 
-        if (strategy.requiresVision() && isFalse(selectedModel.isSupportsVision())) {
+        if (isTrue(strategy.requiresVision()) && isFalse(selectedModel.isSupportsVision())) {
             throw new ServiceException(
                     AI_VISION_NOT_SUPPORTED.formatted(selectedModel.getDisplayName()),
                     ErrorCode.SERVICE_AI_MODEL_ERROR
@@ -93,7 +96,8 @@ public class AIExecutionService {
      * Attempt execution with a single model.
      */
     private <I, O> O attemptExecution(AIOperationStrategy<I, O> strategy, I input, AIModelEnum model) {
-        
+        // can we use spring retry here or other features of spring before going to fallback?
+        // I also ready that it is possible to use json features in spring AI so need to look into this!
         ChatModel chatModel = modelSelectorService.selectChatModel(model);
         
         Message message = strategy.buildMessage(input);
@@ -128,7 +132,7 @@ public class AIExecutionService {
                 AIModelEnum fallbackModel = AIModelEnum.valueOf(fallbackModelName);
                 
                 if (Objects.equals(fallbackModel, primaryModel) ||
-                    (strategy.requiresVision() && isFalse(fallbackModel.isSupportsVision()))) {
+                    (isTrue(strategy.requiresVision()) && isFalse(fallbackModel.isSupportsVision()))) {
                     continue;
                 }
 
@@ -153,7 +157,7 @@ public class AIExecutionService {
     }
 
     /**
-     * Create ChatOptions for the specific model.
+     * Create ChatOptions for the specific model with JSON response format.
      */
     private ChatOptions createChatOptions(AIModelEnum selectedModel) {
         return switch (selectedModel.getProvider()) {
@@ -161,6 +165,7 @@ public class AIExecutionService {
                     .model(selectedModel.getModelId())
                     .temperature(DEFAULT_TEMPERATURE)
                     .maxTokens(selectedModel.getMaxOutputTokens())
+                    .responseFormat(new ResponseFormat(ResponseFormat.Type.JSON_OBJECT))
                     .build();
 
             case ANTHROPIC -> AnthropicChatOptions.builder()

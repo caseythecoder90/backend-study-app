@@ -57,7 +57,14 @@ public enum ErrorCode {
     // Operations Error Codes
     ENCRYPTION_ERROR("OPS_001", "Encryption failed"),
     DECRYPTION_ERROR("OPS_002", "Decryption failed"),
-    INVALID_INPUT("OPS_003", "Invalid input provided");
+    INVALID_INPUT("OPS_003", "Invalid input provided"),
+
+    // Image Service Error Codes
+    IMAGE_UPLOAD_FAILED("IMG_001", "Failed to upload image"),
+    IMAGE_RETRIEVAL_FAILED("IMG_002", "Failed to retrieve image"),
+    IMAGE_DELETE_FAILED("IMG_003", "Failed to delete image"),
+    VALIDATION_FAILED("VAL_001", "Validation failed"),
+    NOT_FOUND("NF_001", "Resource not found");
 
     private final String code;
     private final String defaultMessage;

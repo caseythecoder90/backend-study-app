@@ -1,7 +1,7 @@
 package com.flashcards.backend.flashcards.service;
 
 import com.flashcards.backend.flashcards.exception.ServiceException;
-import com.flashcards.backend.flashcards.model.Role;
+import com.flashcards.backend.flashcards.enums.Role;
 import com.flashcards.backend.flashcards.model.User;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;

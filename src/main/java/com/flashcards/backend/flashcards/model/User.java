@@ -1,5 +1,6 @@
 package com.flashcards.backend.flashcards.model;
 
+import com.flashcards.backend.flashcards.enums.Role;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

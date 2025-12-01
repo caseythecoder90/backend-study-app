@@ -19,9 +19,13 @@ import java.util.Optional;
 import java.util.function.Supplier;
 
 import static com.flashcards.backend.flashcards.constants.ErrorMessages.ENTITY_DECK;
+import static com.flashcards.backend.flashcards.constants.ErrorMessages.ENTITY_DECKS;
 import static com.flashcards.backend.flashcards.constants.ErrorMessages.ENTITY_USER;
+import static com.flashcards.backend.flashcards.constants.ErrorMessages.SERVICE_DECK_OWNERSHIP_DENIED;
 import static com.flashcards.backend.flashcards.constants.ErrorMessages.SERVICE_ENTITY_NOT_FOUND;
 import static com.flashcards.backend.flashcards.constants.ErrorMessages.SERVICE_OPERATION_FAILED;
+import static com.flashcards.backend.flashcards.constants.ErrorMessages.SERVICE_VALIDATION_FAILED;
+import static org.apache.commons.lang3.BooleanUtils.isFalse;
 
 @Slf4j
 @Service
@@ -44,7 +48,7 @@ public class DeckService {
     public List<DeckDto> findByUserId(String userId) {
         return executeWithExceptionHandling(() ->
             deckMapper.toDtoList(deckDao.findByUserId(userId)),
-            () -> SERVICE_OPERATION_FAILED.formatted("find by user", "decks")
+            () -> SERVICE_OPERATION_FAILED.formatted("find by user", ENTITY_DECKS)
         );
     }
 
@@ -52,7 +56,7 @@ public class DeckService {
     public List<DeckDto> findPublicDecks() {
         return executeWithExceptionHandling(() ->
             deckMapper.toDtoList(deckDao.findByIsPublicTrue()),
-            () -> SERVICE_OPERATION_FAILED.formatted("find public", "decks")
+            () -> SERVICE_OPERATION_FAILED.formatted("find public", ENTITY_DECKS)
         );
     }
 
@@ -60,7 +64,7 @@ public class DeckService {
     public List<DeckDto> findByCategory(String category) {
         return executeWithExceptionHandling(() ->
             deckMapper.toDtoList(deckDao.findByCategory(category)),
-            () -> SERVICE_OPERATION_FAILED.formatted("find by category", "decks")
+            () -> SERVICE_OPERATION_FAILED.formatted("find by category", ENTITY_DECKS)
         );
     }
 
@@ -68,7 +72,7 @@ public class DeckService {
     public List<DeckDto> findByTag(String tag) {
         return executeWithExceptionHandling(() ->
             deckMapper.toDtoList(deckDao.findByTagsContaining(tag)),
-            () -> SERVICE_OPERATION_FAILED.formatted("find by tag", "decks")
+            () -> SERVICE_OPERATION_FAILED.formatted("find by tag", ENTITY_DECKS)
         );
     }
 
@@ -76,7 +80,7 @@ public class DeckService {
     public List<DeckDto> findByUserIdAndVisibility(String userId, boolean isPublic) {
         return executeWithExceptionHandling(() ->
             deckMapper.toDtoList(deckDao.findByUserIdAndIsPublic(userId, isPublic)),
-            () -> SERVICE_OPERATION_FAILED.formatted("find by user and visibility", "decks")
+            () -> SERVICE_OPERATION_FAILED.formatted("find by user and visibility", ENTITY_DECKS)
         );
     }
 
@@ -84,7 +88,7 @@ public class DeckService {
     public List<DeckDto> findAll() {
         return executeWithExceptionHandling(() ->
             deckMapper.toDtoList(deckDao.findAll()),
-            () -> SERVICE_OPERATION_FAILED.formatted("find all", "decks")
+            () -> SERVICE_OPERATION_FAILED.formatted("find all", ENTITY_DECKS)
         );
     }
 
@@ -128,12 +132,35 @@ public class DeckService {
     @Transactional(readOnly = true)
     public long countDecks() {
         return executeWithExceptionHandling(deckDao::count,
-                () -> SERVICE_OPERATION_FAILED.formatted("count", "decks"));
+                () -> SERVICE_OPERATION_FAILED.formatted("count", ENTITY_DECKS));
+    }
+
+    /**
+     * Validates that a deck belongs to a specific user.
+     * Used for authorization checks before allowing access to deck flashcards.
+     *
+     * @param deckId the deck ID to validate
+     * @param userId the user ID that should own the deck
+     * @throws ServiceException if deck not found or doesn't belong to user
+     */
+    public void validateDeckBelongsToUser(String deckId, String userId) {
+        Deck deck = deckDao.findById(deckId)
+                .orElseThrow(() -> new ServiceException(
+                        SERVICE_ENTITY_NOT_FOUND.formatted(ENTITY_DECK, deckId),
+                        ErrorCode.SERVICE_NOT_FOUND
+                ));
+
+        if (isFalse(deck.getUserId().equals(userId))) {
+            throw new ServiceException(
+                    SERVICE_VALIDATION_FAILED.formatted(ENTITY_DECK, SERVICE_DECK_OWNERSHIP_DENIED),
+                    ErrorCode.SERVICE_VALIDATION_ERROR
+            );
+        }
     }
 
     private void validateUserExists(String userId) {
         boolean userExists = userDao.findById(userId).isPresent();
-        if (!userExists) {
+        if (isFalse(userExists)) {
             throw new ServiceException(
                     SERVICE_ENTITY_NOT_FOUND.formatted(ENTITY_USER, userId),
                     ErrorCode.SERVICE_NOT_FOUND

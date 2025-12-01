@@ -3,7 +3,7 @@ package com.flashcards.backend.flashcards.oauth;
 import com.flashcards.backend.flashcards.dao.UserDao;
 import com.flashcards.backend.flashcards.exception.ErrorCode;
 import com.flashcards.backend.flashcards.exception.ServiceException;
-import com.flashcards.backend.flashcards.model.Role;
+import com.flashcards.backend.flashcards.enums.Role;
 import com.flashcards.backend.flashcards.model.User;
 import com.flashcards.backend.flashcards.service.JwtService;
 import jakarta.servlet.ServletException;

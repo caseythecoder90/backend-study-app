@@ -12,7 +12,7 @@ import com.flashcards.backend.flashcards.dto.UserDto;
 import com.flashcards.backend.flashcards.exception.ErrorCode;
 import com.flashcards.backend.flashcards.exception.ServiceException;
 import com.flashcards.backend.flashcards.mapper.UserMapper;
-import com.flashcards.backend.flashcards.model.Role;
+import com.flashcards.backend.flashcards.enums.Role;
 import com.flashcards.backend.flashcards.model.User;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -43,7 +43,6 @@ import static com.flashcards.backend.flashcards.constants.ErrorMessages.ENTITY_U
 import static com.flashcards.backend.flashcards.constants.ErrorMessages.SERVICE_DUPLICATE_EXISTS;
 import static com.flashcards.backend.flashcards.constants.JwtConstants.JWT_TOKEN_TYPE;
 import static com.flashcards.backend.flashcards.util.SecurityUtils.sanitizeForLog;
-import static java.util.Objects.nonNull;
 import static org.apache.commons.lang3.BooleanUtils.isFalse;
 import static org.apache.commons.lang3.BooleanUtils.isTrue;
 import static org.apache.commons.lang3.StringUtils.isBlank;

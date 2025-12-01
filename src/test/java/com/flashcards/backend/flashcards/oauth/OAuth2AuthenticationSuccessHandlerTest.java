@@ -1,8 +1,7 @@
 package com.flashcards.backend.flashcards.oauth;
 
 import com.flashcards.backend.flashcards.dao.UserDao;
-import com.flashcards.backend.flashcards.exception.ServiceException;
-import com.flashcards.backend.flashcards.model.Role;
+import com.flashcards.backend.flashcards.enums.Role;
 import com.flashcards.backend.flashcards.model.User;
 import com.flashcards.backend.flashcards.service.JwtService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -14,7 +13,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;

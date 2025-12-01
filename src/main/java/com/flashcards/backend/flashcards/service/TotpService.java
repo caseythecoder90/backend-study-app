@@ -2,29 +2,19 @@ package com.flashcards.backend.flashcards.service;
 
 import com.flashcards.backend.flashcards.exception.ErrorCode;
 import com.flashcards.backend.flashcards.exception.ServiceException;
-import dev.samstevens.totp.code.CodeGenerator;
 import dev.samstevens.totp.code.CodeVerifier;
-import dev.samstevens.totp.code.DefaultCodeGenerator;
-import dev.samstevens.totp.code.DefaultCodeVerifier;
-import dev.samstevens.totp.code.HashingAlgorithm;
 import dev.samstevens.totp.qr.QrData;
 import dev.samstevens.totp.qr.QrDataFactory;
 import dev.samstevens.totp.qr.QrGenerator;
-import dev.samstevens.totp.qr.ZxingPngQrGenerator;
-import dev.samstevens.totp.secret.DefaultSecretGenerator;
 import dev.samstevens.totp.secret.SecretGenerator;
-import dev.samstevens.totp.time.SystemTimeProvider;
-import dev.samstevens.totp.time.TimeProvider;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.Base64;
-import java.util.Random;
 
 import static com.flashcards.backend.flashcards.constants.AuthConstants.QR_CODE_DATA_URI_PREFIX;
-import static com.flashcards.backend.flashcards.constants.AuthConstants.TOTP_CODE_LENGTH;
-import static com.flashcards.backend.flashcards.constants.AuthConstants.TOTP_TIME_STEP_SECONDS;
 import static com.flashcards.backend.flashcards.constants.ErrorMessages.AUTH_TOTP_CODE_INVALID;
 import static com.flashcards.backend.flashcards.constants.ErrorMessages.AUTH_TOTP_QR_GENERATION_FAILED;
 import static com.flashcards.backend.flashcards.constants.ErrorMessages.AUTH_TOTP_SECRET_USERNAME_NULL;
@@ -34,23 +24,15 @@ import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class TotpService {
     private final SecretGenerator secretGenerator;
     private final CodeVerifier codeVerifier;
     private final QrGenerator qrGenerator;
     private final QrDataFactory qrDataFactory;
-    private final String appName;
 
-    public TotpService(@Value("${app.name:Flashcards}") String appName) {
-        this.appName = appName;
-        this.secretGenerator = new DefaultSecretGenerator();
-
-        CodeGenerator codeGenerator = new DefaultCodeGenerator();
-        TimeProvider timeProvider = new SystemTimeProvider();
-        this.codeVerifier = new DefaultCodeVerifier(codeGenerator, timeProvider);
-        this.qrGenerator = new ZxingPngQrGenerator();
-        this.qrDataFactory = new QrDataFactory(HashingAlgorithm.SHA1, TOTP_CODE_LENGTH, TOTP_TIME_STEP_SECONDS);
-    }
+    @Value("${app.name:Flashcards}")
+    private String appName;
 
     public String generateSecret() {
         String secret = secretGenerator.generate();

@@ -21,6 +21,7 @@ import java.util.Objects;
 import static com.flashcards.backend.flashcards.constants.AIConstants.DEFAULT_STT_MODEL;
 import static com.flashcards.backend.flashcards.constants.AIConstants.DEFAULT_STT_RESPONSE_FORMAT;
 import static com.flashcards.backend.flashcards.constants.AIConstants.MAX_AUDIO_FILE_SIZE_MB;
+import static java.util.Objects.nonNull;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 /**
@@ -43,7 +44,7 @@ public class SpeechToTextStrategy implements AIAudioOperationStrategy<AISpeechTo
         return AISpeechToTextResponseDto.builder()
                 .transcribedText(transcribedText)
                 .model(DEFAULT_STT_MODEL)
-                .actionPerformed(Objects.nonNull(input.getAction()) ? input.getAction() : "TRANSCRIPTION_ONLY")
+                .actionPerformed(nonNull(input.getAction()) ? input.getAction() : "TRANSCRIPTION_ONLY")
                 .build();
     }
 
@@ -56,7 +57,7 @@ public class SpeechToTextStrategy implements AIAudioOperationStrategy<AISpeechTo
             Resource audioResource = new ByteArrayResource(audioBytes) {
                 @Override
                 public String getFilename() {
-                    return Objects.nonNull(originalFilename) ? originalFilename : "audio.mp3";
+                    return nonNull(originalFilename) ? originalFilename : "audio.mp3";
                 }
             };
 

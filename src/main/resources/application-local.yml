@@ -77,6 +77,10 @@ jwt:
   expiration: 86400000  # 24 hours
   issuer: flashcards-app
 
+totp:
+  code-length: 6
+  time-step: 30  # seconds
+
 oauth:
   success-redirect-url: http://localhost:3000/auth/success
   failure-redirect-url: http://localhost:3000/auth/error

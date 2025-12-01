@@ -11,6 +11,8 @@ import com.flashcards.backend.flashcards.mapper.FlashcardMapper;
 import com.flashcards.backend.flashcards.model.Flashcard;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,9 +24,34 @@ import java.util.function.Supplier;
 
 import static com.flashcards.backend.flashcards.constants.ErrorMessages.ENTITY_DECK;
 import static com.flashcards.backend.flashcards.constants.ErrorMessages.ENTITY_FLASHCARD;
+import static com.flashcards.backend.flashcards.constants.ErrorMessages.ENTITY_FLASHCARDS;
+import static com.flashcards.backend.flashcards.constants.ErrorMessages.OPERATION_COUNT_ALL;
+import static com.flashcards.backend.flashcards.constants.ErrorMessages.OPERATION_COUNT_BY_DECK;
+import static com.flashcards.backend.flashcards.constants.ErrorMessages.OPERATION_CREATE;
+import static com.flashcards.backend.flashcards.constants.ErrorMessages.OPERATION_CREATE_MULTIPLE;
+import static com.flashcards.backend.flashcards.constants.ErrorMessages.OPERATION_DELETE;
+import static com.flashcards.backend.flashcards.constants.ErrorMessages.OPERATION_DELETE_BY_DECK;
+import static com.flashcards.backend.flashcards.constants.ErrorMessages.OPERATION_FIND;
+import static com.flashcards.backend.flashcards.constants.ErrorMessages.OPERATION_FIND_ALL;
+import static com.flashcards.backend.flashcards.constants.ErrorMessages.OPERATION_FIND_BY_DECK;
+import static com.flashcards.backend.flashcards.constants.ErrorMessages.OPERATION_FIND_BY_DECK_AND_DIFFICULTY;
+import static com.flashcards.backend.flashcards.constants.ErrorMessages.OPERATION_FIND_BY_TAG;
+import static com.flashcards.backend.flashcards.constants.ErrorMessages.OPERATION_FIND_BY_USER;
+import static com.flashcards.backend.flashcards.constants.ErrorMessages.OPERATION_FIND_BY_USER_AND_TAG;
+import static com.flashcards.backend.flashcards.constants.ErrorMessages.OPERATION_UPDATE;
+import static com.flashcards.backend.flashcards.constants.ErrorMessages.OPERATION_UPDATE_STUDY_STATS;
 import static com.flashcards.backend.flashcards.constants.ErrorMessages.SERVICE_ENTITY_NOT_FOUND;
 import static com.flashcards.backend.flashcards.constants.ErrorMessages.SERVICE_OPERATION_FAILED;
 import static com.flashcards.backend.flashcards.constants.ErrorMessages.SERVICE_VALIDATION_FAILED;
+import static com.flashcards.backend.flashcards.constants.ErrorMessages.VALIDATION_BACK_CONTENT_REQUIRED;
+import static com.flashcards.backend.flashcards.constants.ErrorMessages.VALIDATION_CREATION_DATA_NULL;
+import static com.flashcards.backend.flashcards.constants.ErrorMessages.VALIDATION_DATA_NULL;
+import static com.flashcards.backend.flashcards.constants.ErrorMessages.VALIDATION_DECK_ID_REQUIRED;
+import static com.flashcards.backend.flashcards.constants.ErrorMessages.VALIDATION_DIFFICULTY_LEVEL_NULL;
+import static com.flashcards.backend.flashcards.constants.ErrorMessages.VALIDATION_FRONT_CONTENT_REQUIRED;
+import static com.flashcards.backend.flashcards.constants.ErrorMessages.VALIDATION_ID_BLANK;
+import static com.flashcards.backend.flashcards.constants.ErrorMessages.VALIDATION_TAG_BLANK;
+import static com.flashcards.backend.flashcards.constants.ErrorMessages.VALIDATION_USER_ID_REQUIRED;
 import static java.util.Objects.isNull;
 import static java.util.Objects.requireNonNull;
 import static org.apache.commons.collections4.CollectionUtils.isEmpty;
@@ -45,7 +72,7 @@ public class FlashcardService {
             validateId(id);
             return flashcardDao.findById(id)
                     .map(flashcardMapper::toDto);
-        }, () -> SERVICE_OPERATION_FAILED.formatted("find", ENTITY_FLASHCARD));
+        }, () -> SERVICE_OPERATION_FAILED.formatted(OPERATION_FIND, ENTITY_FLASHCARD));
     }
 
     @Transactional(readOnly = true)
@@ -53,7 +80,7 @@ public class FlashcardService {
         return executeWithExceptionHandling(() -> {
             validateId(deckId);
             return flashcardMapper.toDtoList(flashcardDao.findByDeckId(deckId));
-        }, () -> SERVICE_OPERATION_FAILED.formatted("find by deck", ENTITY_FLASHCARD));
+        }, () -> SERVICE_OPERATION_FAILED.formatted(OPERATION_FIND_BY_DECK, ENTITY_FLASHCARD));
     }
 
     @Transactional(readOnly = true)
@@ -61,16 +88,16 @@ public class FlashcardService {
         return executeWithExceptionHandling(() -> {
             validateId(userId);
             return flashcardMapper.toDtoList(flashcardDao.findByUserId(userId));
-        }, () -> SERVICE_OPERATION_FAILED.formatted("find by user", ENTITY_FLASHCARD));
+        }, () -> SERVICE_OPERATION_FAILED.formatted(OPERATION_FIND_BY_USER, ENTITY_FLASHCARD));
     }
 
     @Transactional(readOnly = true)
     public List<FlashcardDto> findByDeckIdAndDifficulty(String deckId, Flashcard.DifficultyLevel difficulty) {
         return executeWithExceptionHandling(() -> {
             validateId(deckId);
-            requireNonNull(difficulty, "Difficulty level cannot be null");
+            requireNonNull(difficulty, VALIDATION_DIFFICULTY_LEVEL_NULL);
             return flashcardMapper.toDtoList(flashcardDao.findByDeckIdAndDifficulty(deckId, difficulty));
-        }, () -> SERVICE_OPERATION_FAILED.formatted("find by deck and difficulty", ENTITY_FLASHCARD));
+        }, () -> SERVICE_OPERATION_FAILED.formatted(OPERATION_FIND_BY_DECK_AND_DIFFICULTY, ENTITY_FLASHCARD));
     }
 
     @Transactional(readOnly = true)
@@ -78,14 +105,63 @@ public class FlashcardService {
         return executeWithExceptionHandling(() -> {
             validateTag(tag);
             return flashcardMapper.toDtoList(flashcardDao.findByTagsContaining(tag));
-        }, () -> SERVICE_OPERATION_FAILED.formatted("find by tag", ENTITY_FLASHCARD));
+        }, () -> SERVICE_OPERATION_FAILED.formatted(OPERATION_FIND_BY_TAG, ENTITY_FLASHCARD));
     }
 
     @Transactional(readOnly = true)
     public List<FlashcardDto> findAll() {
         return executeWithExceptionHandling(() ->
                 flashcardMapper.toDtoList(flashcardDao.findAll()),
-                () -> SERVICE_OPERATION_FAILED.formatted("find all", "flashcards")
+                () -> SERVICE_OPERATION_FAILED.formatted(OPERATION_FIND_ALL, ENTITY_FLASHCARDS)
+        );
+    }
+
+    // Paginated query methods
+
+    @Transactional(readOnly = true)
+    public Page<FlashcardDto> findByUserId(String userId, Pageable pageable) {
+        return executeWithExceptionHandling(() -> {
+            validateId(userId);
+            return flashcardDao.findByUserId(userId, pageable)
+                    .map(flashcardMapper::toDto);
+        }, () -> SERVICE_OPERATION_FAILED.formatted(OPERATION_FIND_BY_USER, ENTITY_FLASHCARD));
+    }
+
+    @Transactional(readOnly = true)
+    public Page<FlashcardDto> findByDeckId(String deckId, Pageable pageable) {
+        return executeWithExceptionHandling(() -> {
+            validateId(deckId);
+            return flashcardDao.findByDeckId(deckId, pageable)
+                    .map(flashcardMapper::toDto);
+        }, () -> SERVICE_OPERATION_FAILED.formatted(OPERATION_FIND_BY_DECK, ENTITY_FLASHCARD));
+    }
+
+    @Transactional(readOnly = true)
+    public Page<FlashcardDto> findByDeckIdAndDifficulty(String deckId, Flashcard.DifficultyLevel difficulty, Pageable pageable) {
+        return executeWithExceptionHandling(() -> {
+            validateId(deckId);
+            requireNonNull(difficulty, VALIDATION_DIFFICULTY_LEVEL_NULL);
+            return flashcardDao.findByDeckIdAndDifficulty(deckId, difficulty, pageable)
+                    .map(flashcardMapper::toDto);
+        }, () -> SERVICE_OPERATION_FAILED.formatted(OPERATION_FIND_BY_DECK_AND_DIFFICULTY, ENTITY_FLASHCARD));
+    }
+
+    @Transactional(readOnly = true)
+    public Page<FlashcardDto> findByUserIdAndTagsContaining(String userId, String tag, Pageable pageable) {
+        return executeWithExceptionHandling(() -> {
+            validateId(userId);
+            validateTag(tag);
+            return flashcardDao.findByUserIdAndTagsContaining(userId, tag, pageable)
+                    .map(flashcardMapper::toDto);
+        }, () -> SERVICE_OPERATION_FAILED.formatted(OPERATION_FIND_BY_USER_AND_TAG, ENTITY_FLASHCARD));
+    }
+
+    @Transactional(readOnly = true)
+    public Page<FlashcardDto> findAll(Pageable pageable) {
+        return executeWithExceptionHandling(() ->
+                flashcardDao.findAll(pageable)
+                        .map(flashcardMapper::toDto),
+                () -> SERVICE_OPERATION_FAILED.formatted(OPERATION_FIND_ALL, ENTITY_FLASHCARDS)
         );
     }
 
@@ -99,7 +175,7 @@ public class FlashcardService {
 
             updateDeckCount(createFlashcardDto.getDeckId());
             return flashcardMapper.toDto(savedFlashcard);
-        }, () -> SERVICE_OPERATION_FAILED.formatted("create", ENTITY_FLASHCARD));
+        }, () -> SERVICE_OPERATION_FAILED.formatted(OPERATION_CREATE, ENTITY_FLASHCARD));
     }
 
     public List<FlashcardDto> createMultipleFlashcards(List<CreateFlashcardDto> createFlashcardDtos) {
@@ -130,7 +206,7 @@ public class FlashcardService {
                     .forEach(this::updateDeckCount);
 
             return flashcardMapper.toDtoList(savedFlashcards);
-        }, () -> SERVICE_OPERATION_FAILED.formatted("create multiple", ENTITY_FLASHCARD));
+        }, () -> SERVICE_OPERATION_FAILED.formatted(OPERATION_CREATE_MULTIPLE, ENTITY_FLASHCARD));
     }
 
     public FlashcardDto updateFlashcard(String id, FlashcardDto flashcardDto) {
@@ -147,7 +223,7 @@ public class FlashcardService {
             flashcardMapper.updateEntity(existingFlashcard, flashcardDto);
             Flashcard updatedFlashcard = flashcardDao.update(existingFlashcard);
             return flashcardMapper.toDto(updatedFlashcard);
-        }, () -> SERVICE_OPERATION_FAILED.formatted("update", ENTITY_FLASHCARD));
+        }, () -> SERVICE_OPERATION_FAILED.formatted(OPERATION_UPDATE, ENTITY_FLASHCARD));
     }
 
     public void deleteFlashcard(String id) {
@@ -163,7 +239,7 @@ public class FlashcardService {
             flashcardDao.deleteById(id);
             updateDeckCount(flashcard.getDeckId());
             return null;
-        }, () -> SERVICE_OPERATION_FAILED.formatted("delete", ENTITY_FLASHCARD));
+        }, () -> SERVICE_OPERATION_FAILED.formatted(OPERATION_DELETE, ENTITY_FLASHCARD));
     }
 
     public void deleteFlashcardsByDeckId(String deckId) {
@@ -172,7 +248,7 @@ public class FlashcardService {
             flashcardDao.deleteByDeckId(deckId);
             updateDeckCount(deckId);
             return null;
-        }, () -> SERVICE_OPERATION_FAILED.formatted("delete by deck", ENTITY_FLASHCARD));
+        }, () -> SERVICE_OPERATION_FAILED.formatted(OPERATION_DELETE_BY_DECK, ENTITY_FLASHCARD));
     }
 
     public void updateStudyStats(String id, boolean correct) {
@@ -196,7 +272,7 @@ public class FlashcardService {
             flashcard.setLastStudiedAt(LocalDateTime.now());
             flashcardDao.update(flashcard);
             return null;
-        }, () -> SERVICE_OPERATION_FAILED.formatted("update study stats for", ENTITY_FLASHCARD));
+        }, () -> SERVICE_OPERATION_FAILED.formatted(OPERATION_UPDATE_STUDY_STATS, ENTITY_FLASHCARD));
     }
 
     @Transactional(readOnly = true)
@@ -204,19 +280,19 @@ public class FlashcardService {
         return executeWithExceptionHandling(() -> {
             validateId(deckId);
             return flashcardDao.countByDeckId(deckId);
-        }, () -> SERVICE_OPERATION_FAILED.formatted("count by deck", ENTITY_FLASHCARD));
+        }, () -> SERVICE_OPERATION_FAILED.formatted(OPERATION_COUNT_BY_DECK, ENTITY_FLASHCARD));
     }
 
     @Transactional(readOnly = true)
     public long countAll() {
         return executeWithExceptionHandling(flashcardDao::count,
-                () -> SERVICE_OPERATION_FAILED.formatted("count all", "flashcards"));
+                () -> SERVICE_OPERATION_FAILED.formatted(OPERATION_COUNT_ALL, ENTITY_FLASHCARDS));
     }
 
     private void validateId(String id) {
         if (isBlank(id)) {
             throw new ServiceException(
-                    SERVICE_VALIDATION_FAILED.formatted(ENTITY_FLASHCARD, "ID cannot be blank"),
+                    SERVICE_VALIDATION_FAILED.formatted(ENTITY_FLASHCARD, VALIDATION_ID_BLANK),
                     ErrorCode.SERVICE_VALIDATION_ERROR
             );
         }
@@ -225,25 +301,25 @@ public class FlashcardService {
     private void validateTag(String tag) {
         if (isBlank(tag)) {
             throw new ServiceException(
-                    SERVICE_VALIDATION_FAILED.formatted(ENTITY_FLASHCARD, "Tag cannot be blank"),
+                    SERVICE_VALIDATION_FAILED.formatted(ENTITY_FLASHCARD, VALIDATION_TAG_BLANK),
                     ErrorCode.SERVICE_VALIDATION_ERROR
             );
         }
     }
 
     private void validateCreateFlashcardDto(CreateFlashcardDto createFlashcardDto) {
-        requireNonNull(createFlashcardDto, ENTITY_FLASHCARD + " creation data cannot be null");
+        requireNonNull(createFlashcardDto, VALIDATION_CREATION_DATA_NULL.formatted(ENTITY_FLASHCARD));
 
         if (isBlank(createFlashcardDto.getDeckId())) {
             throw new ServiceException(
-                    SERVICE_VALIDATION_FAILED.formatted(ENTITY_FLASHCARD, "Deck ID is required"),
+                    SERVICE_VALIDATION_FAILED.formatted(ENTITY_FLASHCARD, VALIDATION_DECK_ID_REQUIRED),
                     ErrorCode.SERVICE_VALIDATION_ERROR
             );
         }
 
         if (isBlank(createFlashcardDto.getUserId())) {
             throw new ServiceException(
-                    SERVICE_VALIDATION_FAILED.formatted(ENTITY_FLASHCARD, "User ID is required"),
+                    SERVICE_VALIDATION_FAILED.formatted(ENTITY_FLASHCARD, VALIDATION_USER_ID_REQUIRED),
                     ErrorCode.SERVICE_VALIDATION_ERROR
             );
         }
@@ -251,7 +327,7 @@ public class FlashcardService {
         if (isNull(createFlashcardDto.getFront()) ||
             isBlank(createFlashcardDto.getFront().getText())) {
             throw new ServiceException(
-                    SERVICE_VALIDATION_FAILED.formatted(ENTITY_FLASHCARD, "Front content is required"),
+                    SERVICE_VALIDATION_FAILED.formatted(ENTITY_FLASHCARD, VALIDATION_FRONT_CONTENT_REQUIRED),
                     ErrorCode.SERVICE_VALIDATION_ERROR
             );
         }
@@ -259,14 +335,14 @@ public class FlashcardService {
         if (isNull(createFlashcardDto.getBack()) ||
             isBlank(createFlashcardDto.getBack().getText())) {
             throw new ServiceException(
-                    SERVICE_VALIDATION_FAILED.formatted(ENTITY_FLASHCARD, "Back content is required"),
+                    SERVICE_VALIDATION_FAILED.formatted(ENTITY_FLASHCARD, VALIDATION_BACK_CONTENT_REQUIRED),
                     ErrorCode.SERVICE_VALIDATION_ERROR
             );
         }
     }
 
     private void validateFlashcardDto(FlashcardDto flashcardDto) {
-        requireNonNull(flashcardDto, ENTITY_FLASHCARD + " data cannot be null");
+        requireNonNull(flashcardDto, VALIDATION_DATA_NULL.formatted(ENTITY_FLASHCARD));
     }
 
     private void validateDeckExists(String deckId) {
